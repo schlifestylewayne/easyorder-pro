@@ -755,14 +755,22 @@
 
         // 嘗試初始化資料庫
         async function initializeDatabase() {
-            let config = null;
-            let targetAppId = 'easy-order-pro-1';
+            // 寫死指定的預設 Firebase 配置
+            let config = {
+                apiKey: "AIzaSyAaXfaLPO7n8XK6o0sdZglzhIf_FYfaalc",
+                authDomain: "sch-lifestyle.firebaseapp.com",
+                projectId: "sch-lifestyle",
+                storageBucket: "sch-lifestyle.firebasestorage.app",
+                messagingSenderId: "220474138859",
+                appId: "1:220474138859:web:80a70b52866c283cf2deae"
+            };
+            let targetAppId = 'sch-lifestyle-app';
 
             // 1. 優先檢查環境變數（系統運行時自備的 Firebase）
             if (typeof __firebase_config !== 'undefined' && __firebase_config) {
                 try {
                     config = JSON.parse(__firebase_config);
-                    targetAppId = typeof __app_id !== 'undefined' ? __app_id : 'easy-order-pro-1';
+                    targetAppId = typeof __app_id !== 'undefined' ? __app_id : 'sch-lifestyle-app';
                 } catch(e) {
                     console.error("解析系統內嵌配置出錯:", e);
                 }
@@ -774,7 +782,7 @@
                     try {
                         const parsed = JSON.parse(savedConfig);
                         config = parsed.config;
-                        targetAppId = parsed.appId || 'easy-order-pro-1';
+                        targetAppId = parsed.appId || 'sch-lifestyle-app';
                     } catch(e) {
                         console.error("解析自訂 Firebase 配置出錯:", e);
                     }
@@ -943,10 +951,6 @@
                 // RULE 2: 不在查詢中使用 orderBy，使用記憶體 JavaScript 排序
                 freshData.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
                 window.ordersData = freshData;
-                
-                if (freshData.length === 0) {
-                    insertInitialTestOrders(ordersRef);
-                }
 
                 renderOrderList();
                 updateDashboardStats();
@@ -956,10 +960,10 @@
             });
 
             const collectionsToListen = [
-                { name: 'customers', key: 'customers', initData: [{code: 'C001', name: '台灣積體電路製造 (TSMC)'}, {code: 'C002', name: '聯發科技 (MediaTek)'}, {code: 'C003', name: '鴻海精密 (Foxconn)'}] },
-                { name: 'salesReps', key: 'salesReps', initData: [{code: 'S001', name: '王小明 (Leo)'}, {code: 'S002', name: '陳雅婷 (Tina)'}, {code: 'S003', name: '林建國 (Ken)'}] },
-                { name: 'invoiceMethods', key: 'invoiceMethods', initData: [{name: '二聯式電子發票'}, {name: '三聯式電子發票'}, {name: '紙本手開三聯'}, {name: '免開發票(收據)'}] },
-                { name: 'deliveryMethods', key: 'deliveryMethods', initData: [{name: '公司車專送'}, {name: '黑貓宅急便'}, {name: '新竹物流'}, {name: '客戶自取'}] }
+                { name: 'customers', key: 'customers' },
+                { name: 'salesReps', key: 'salesReps' },
+                { name: 'invoiceMethods', key: 'invoiceMethods' },
+                { name: 'deliveryMethods', key: 'deliveryMethods' }
             ];
 
             collectionsToListen.forEach(meta => {
@@ -968,32 +972,11 @@
                     let items = [];
                     snapshot.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
                     
-                    if (items.length === 0) {
-                        insertInitialBasisData(colRef, meta.initData);
-                    } else {
-                        window.basisData[meta.key] = items.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
-                        renderDropdownsAndSettings();
-                        renderOrderList();
-                    }
+                    window.basisData[meta.key] = items.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+                    renderDropdownsAndSettings();
+                    renderOrderList();
                 }, err => console.error(`監聽 ${meta.name} 錯誤:`, err));
             });
-        }
-
-        async function insertInitialBasisData(colRef, arr) {
-            if (!currentUser) return;
-            for (const item of arr) {
-                const newDocRef = doc(colRef);
-                await setDoc(newDocRef, { ...item, createdAt: new Date().toISOString() });
-            }
-        }
-
-        async function insertInitialTestOrders(colRef) {
-            if (!currentUser) return;
-            const demoData = getDemoOrdersPayload();
-            for (const item of demoData) {
-                const newDocRef = doc(colRef);
-                await setDoc(newDocRef, item);
-            }
         }
 
         // ==========================================
@@ -1004,7 +987,7 @@
             if (lsOrders) {
                 window.ordersData = JSON.parse(lsOrders);
             } else {
-                window.ordersData = getDemoOrdersPayload().map((d, i) => ({ id: `local_o_${Date.now()}_${i}`, ...d }));
+                window.ordersData = [];
                 localStorage.setItem("easyorder_orders", JSON.stringify(window.ordersData));
             }
 
@@ -1013,10 +996,10 @@
                 window.basisData = JSON.parse(lsBasis);
             } else {
                 window.basisData = {
-                    customers: [{id:'c1', code: 'C001', name: '台灣積體電路製造 (TSMC)'}, {id:'c2', code: 'C002', name: '聯發科技 (MediaTek)'}, {id:'c3', code: 'C003', name: '鴻海精密 (Foxconn)'}],
-                    salesReps: [{id:'s1', code: 'S001', name: '王小明 (Leo)'}, {id:'s2', code: 'S002', name: '陳雅婷 (Tina)'}, {id:'s3', code: 'S003', name: '林建國 (Ken)'}],
-                    invoiceMethods: [{id:'i1', name: '二聯式電子發票'}, {id:'i2', name: '三聯式電子發票'}, {id:'i3', name: '紙本手開三聯'}, {id:'i4', name: '免開發票(收據)'}],
-                    deliveryMethods: [{id:'d1', name: '公司車專送'}, {id:'d2', name: '黑貓宅急便'}, {id:'d3', name: '新竹物流'}, {id:'d4', name: '客戶自取'}]
+                    customers: [],
+                    salesReps: [],
+                    invoiceMethods: [],
+                    deliveryMethods: []
                 };
                 localStorage.setItem("easyorder_basis", JSON.stringify(window.basisData));
             }
@@ -1025,62 +1008,6 @@
             renderOrderList();
             updateDashboardStats();
             loadCloudConfigFields(); // 更新單機狀態
-        }
-
-        function getDemoOrdersPayload() {
-            const now = new Date();
-            const formatYYMMDD = (d) => {
-                const yy = String(d.getFullYear()).slice(-2);
-                const mm = String(d.getMonth() + 1).padStart(2, '0');
-                const dd = String(d.getDate()).padStart(2, '0');
-                return `${yy}${mm}${dd}`;
-            };
-
-            const d1Date = new Date(now.getTime() - 86400000 * 2); 
-            const d2Date = new Date(now.getTime() - 86400000 * 1); 
-            const d3Date = new Date(); 
-
-            const d1 = d1Date.toISOString();
-            const d2 = d2Date.toISOString();
-            const d3 = d3Date.toISOString();
-
-            return [
-                {
-                    type: "Quotation", status: "Draft", docNo: `QT-${formatYYMMDD(d1Date)}-01`, refQuotationNo: "",
-                    customerId: 'c1', customerCode: "C001", customerName: "台灣積體電路製造 (TSMC)", salesRepId: 's1', salesRepCode: "S001", salesRep: "王小明 (Leo)", email: "procurement@tsmc.example.com",
-                    invoiceMethod: "三聯式電子發票", deliveryMethod: "公司車專送",
-                    items: [
-                        { name: "高效能伺服器機櫃 Type-A", qty: 2, price: 45000, subtotal: 90000 },
-                        { name: "不斷電系統 3000VA", qty: 2, price: 12000, subtotal: 24000 }
-                    ],
-                    overallNotes: "客戶要求提供三年保固證明。",
-                    rawTotal: 114000, discountRate: 95, discountReason: "年度大客戶專案折扣", grandTotal: 108300,
-                    createdAt: d1, updatedAt: d1, salesSlipNo: "", shippingDate: null
-                },
-                {
-                    type: "Order", status: "Order", docNo: `OD-${formatYYMMDD(d2Date)}-01`, refQuotationNo: `QT-${formatYYMMDD(d1Date)}-01`,
-                    customerId: 'c2', customerCode: "C002", customerName: "聯發科技 (MediaTek)", salesRepId: 's2', salesRepCode: "S002", salesRep: "陳雅婷 (Tina)", email: "admin@mediatek.example.com",
-                    invoiceMethod: "三聯式電子發票", deliveryMethod: "新竹物流",
-                    items: [
-                        { name: "商務筆記型電腦 ProBook 15", qty: 5, price: 32000, subtotal: 160000 },
-                        { name: "防窺保護貼 15吋", qty: 5, price: 800, subtotal: 4000 }
-                    ],
-                    overallNotes: "急單，請盡快處理轉銷貨。",
-                    rawTotal: 164000, discountRate: 100, discountReason: "", grandTotal: 164000,
-                    createdAt: d2, updatedAt: d2, salesSlipNo: "", shippingDate: null
-                },
-                {
-                    type: "Order", status: "Invoiced", docNo: `OD-${formatYYMMDD(d3Date)}-01`, refQuotationNo: "",
-                    customerId: 'c3', customerCode: "C003", customerName: "鴻海精密 (Foxconn)", salesRepId: 's3', salesRepCode: "S003", salesRep: "林建國 (Ken)", email: "buyer@foxconn.example.com",
-                    invoiceMethod: "三聯式電子發票", deliveryMethod: "黑貓宅急便",
-                    items: [
-                        { name: "企業級無線基地台 WiFi 6", qty: 10, price: 8500, subtotal: 85000 }
-                    ],
-                    overallNotes: "分公司採購",
-                    rawTotal: 85000, discountRate: 90, discountReason: "經銷價", grandTotal: 76500,
-                    createdAt: d3, updatedAt: d3, salesSlipNo: "ERP-SL-2311005", shippingDate: null
-                }
-            ];
         }
 
         // ==========================================
@@ -2817,6 +2744,14 @@
                 } catch(e) {
                     console.error("讀取歷史雲端設定失敗:", e);
                 }
+            } else {
+                // 若無自訂配置，自動填入系統預設值方便參考
+                document.getElementById("cloud-app-id").value = 'sch-lifestyle-app';
+                document.getElementById("cloud-apiKey").value = 'AIzaSyAaXfaLPO7n8XK6o0sdZglzhIf_FYfaalc';
+                document.getElementById("cloud-authDomain").value = 'sch-lifestyle.firebaseapp.com';
+                document.getElementById("cloud-projectId").value = 'sch-lifestyle';
+                document.getElementById("cloud-storageBucket").value = 'sch-lifestyle.firebasestorage.app';
+                document.getElementById("cloud-firebaseAppId").value = '1:220474138859:web:80a70b52866c283cf2deae';
             }
         }
 
