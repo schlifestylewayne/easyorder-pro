@@ -1,0 +1,2907 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EasyOrder Pro 業務銷貨管理系統</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome 圖標 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', 'Noto Sans TC', sans-serif;
+            background-color: #f8fafc;
+            /* 避免 iPad 點擊出現預設灰色高亮 */
+            -webkit-tap-highlight-color: transparent; 
+        }
+        /* 美化滾動條 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        
+        .tab-btn.active {
+            color: #4f46e5; /* indigo-600 */
+            border-bottom: 2px solid #4f46e5;
+            font-weight: 700;
+        }
+        .tab-btn {
+            color: #64748b; /* slate-500 */
+            border-bottom: 2px solid transparent;
+            font-weight: 500;
+        }
+
+        /* 自定義隱藏原生數字框箭頭 */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+        
+        /* 避免自動填充變底色 */
+        input:-webkit-autofill {
+            -webkit-box-shadow: 0 0 0 30px white inset !important;
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- 頂部導航條 -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- 標誌與系統名稱 -->
+                <div class="flex items-center gap-3">
+                    <div class="bg-indigo-600 text-white w-9 h-9 rounded-xl flex items-center justify-center shadow-md shadow-indigo-200">
+                        <i class="fa-solid fa-layer-group text-lg"></i>
+                    </div>
+                    <span class="font-bold text-xl tracking-tight text-slate-800 hidden sm:block">EasyOrder <span class="text-indigo-600">Pro</span></span>
+                </div>
+
+                <!-- 模式切換 Tabs -->
+                <div class="flex space-x-1 sm:space-x-4 overflow-x-auto no-scrollbar">
+                    <button onclick="switchMode('customer')" id="tab-customer" class="tab-btn active px-3 sm:px-5 py-4 text-sm sm:text-base whitespace-nowrap transition-all duration-200 hover:text-indigo-500 flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-pen-nib"></i> 業務下單端
+                    </button>
+                    <button onclick="switchMode('admin')" id="tab-admin" class="tab-btn px-3 sm:px-5 py-4 text-sm sm:text-base whitespace-nowrap transition-all duration-200 hover:text-indigo-500 flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-desktop"></i> 後台管理/業助端
+                    </button>
+                    <button onclick="switchMode('settings')" id="tab-settings" class="tab-btn px-3 sm:px-5 py-4 text-sm sm:text-base whitespace-nowrap transition-all duration-200 hover:text-indigo-500 flex items-center gap-2 cursor-pointer">
+                        <i class="fa-solid fa-sliders"></i> 基礎數據管理
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 狀態連線提示條 (Cloud/Local) -->
+    <div id="connection-banner" class="bg-amber-50 border-b border-amber-200 text-amber-700 py-2 px-4 text-xs font-bold text-center shadow-inner hidden">
+        <i class="fa-solid fa-wifi text-amber-500 mr-1 animate-pulse"></i> 目前使用單機離線模式 (資料儲存於本機瀏覽器)，若需跨設備連線請至「基礎數據管理」設定雲端資料庫。
+    </div>
+
+    <!-- 主要內容區 -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        
+        <!-- ============================================== -->
+        <!-- 視圖 1: 業務下單端 (Customer View) -->
+        <!-- ============================================== -->
+        <div id="customer-view" class="space-y-6">
+            
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-2">
+                <div>
+                    <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">建立單據 <span class="text-indigo-600">New Order</span></h1>
+                    <p class="text-sm text-slate-500 mt-1">建立報價單或直接產生正式訂購單</p>
+                </div>
+                <!-- 手機版/電腦版 表格視圖切換器 (預覽輔助) -->
+                <div class="bg-slate-100 p-1 rounded-xl flex border border-slate-200">
+                    <button onclick="setFormPreviewMode('desktop')" id="preview-desktop-btn" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-white shadow-sm text-indigo-600 transition-colors cursor-pointer">
+                        <i class="fa-solid fa-table"></i> 桌機寬版表格
+                    </button>
+                    <button onclick="setFormPreviewMode('mobile')" id="preview-mobile-btn" class="px-3 py-1.5 text-xs font-bold rounded-lg text-slate-500 hover:text-slate-700 transition-colors cursor-pointer">
+                        <i class="fa-solid fa-mobile-screen"></i> 手機觸控卡片
+                    </button>
+                </div>
+            </div>
+
+            <!-- 修改中提示 -->
+            <div id="editing-indicator" class="hidden border rounded-xl p-4 flex items-center justify-between mb-4 animate-in fade-in">
+                <div class="flex items-center gap-3">
+                    <div id="editing-icon-box" class="w-10 h-10 rounded-full flex items-center justify-center text-lg">
+                        <i id="editing-icon" class="fa-solid fa-pen-to-square"></i>
+                    </div>
+                    <div>
+                        <h3 id="editing-title" class="font-bold text-sm"></h3>
+                        <p class="text-xs mt-0.5" id="editing-subtitle"></p>
+                    </div>
+                </div>
+                <button type="button" onclick="window.cancelEditing()" class="px-4 py-2 bg-white text-slate-600 text-sm font-bold rounded-lg shadow-sm border border-slate-200 hover:bg-slate-50 transition-colors cursor-pointer">
+                    取消
+                </button>
+            </div>
+
+            <form id="order-form" class="space-y-6">
+                <!-- 基本資料區塊 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
+                    <div class="bg-slate-50 border-b border-slate-100 px-6 py-4">
+                        <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-regular fa-address-card text-indigo-500"></i> 客戶與發票資訊
+                        </h2>
+                    </div>
+                    <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        
+                        <!-- 選擇客戶 / 手動輸入 -->
+                        <div class="col-span-1 lg:col-span-2 space-y-1">
+                            <div class="flex justify-between items-end mb-1">
+                                <label class="block text-xs font-bold text-slate-600">客戶名稱 <span class="text-rose-500">*</span></label>
+                                <label class="flex items-center gap-1.5 text-xs text-slate-500 cursor-pointer hover:text-indigo-600 transition-colors font-medium">
+                                    <input type="checkbox" id="autoFillPrevious" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 w-3.5 h-3.5 cursor-pointer">
+                                    <span>帶出前單資料</span>
+                                </label>
+                            </div>
+                            <select id="customerName" required class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-colors appearance-none bg-white cursor-pointer">
+                                <option value="" disabled selected>請選擇現有客戶 (或選擇手動輸入新客戶)</option>
+                                <option value="__MANUAL__" class="font-bold text-indigo-600">➕ 手動輸入新客戶...</option>
+                                <!-- JS動態載入 -->
+                            </select>
+                            <div id="manual-customer-container" class="hidden mt-3 animate-in fade-in slide-in-from-top-2">
+                                <div class="flex gap-2">
+                                    <input type="text" id="manualCustomerCode" placeholder="客戶編號 (選填)" class="w-1/3 rounded-xl border border-indigo-300 bg-indigo-50/30 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-colors font-mono">
+                                    <input type="text" id="manualCustomerName" placeholder="請輸入新客戶名稱" class="w-2/3 rounded-xl border border-indigo-300 bg-indigo-50/30 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-colors">
+                                </div>
+                                <p class="text-[10px] text-indigo-600 mt-1 font-medium"><i class="fa-solid fa-circle-info"></i> 新增的客戶將自動同步存入「客戶名單」基礎數據中，方便後續直接選取。</p>
+                            </div>
+                        </div>
+
+                        <!-- 負責業務 -->
+                        <div class="space-y-1">
+                            <label class="block text-xs font-bold text-slate-600 mb-1">負責業務 <span class="text-rose-500">*</span></label>
+                            <select id="salesRep" required class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-colors appearance-none bg-white cursor-pointer">
+                                <option value="" disabled selected>請選擇業務人員</option>
+                                <!-- JS動態載入 -->
+                            </select>
+                        </div>
+
+                        <div class="space-y-1">
+                            <label class="block text-xs font-bold text-slate-600 mb-1">聯絡 Email</label>
+                            <input type="email" id="email" class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-colors" placeholder="user@example.com">
+                        </div>
+
+                        <div class="space-y-1">
+                            <label class="block text-xs font-bold text-slate-600 mb-1">發票開立方式 <span class="text-rose-500">*</span></label>
+                            <select id="invoiceMethod" required class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-colors appearance-none bg-white cursor-pointer">
+                                <option value="" disabled selected>請選擇</option>
+                                <!-- JS動態載入 -->
+                            </select>
+                        </div>
+                        
+                        <div class="space-y-1">
+                            <label class="block text-xs font-bold text-slate-600 mb-1">出貨管道 / 方式 <span class="text-rose-500">*</span></label>
+                            <select id="deliveryMethod" required class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-colors appearance-none bg-white cursor-pointer">
+                                <option value="" disabled selected>請選擇</option>
+                                <!-- JS動態載入 -->
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 品項明細區塊 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden relative">
+                    <div class="bg-slate-50 border-b border-slate-100 px-6 py-4 flex justify-between items-center">
+                        <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-list-ol text-indigo-500"></i> 訂購品項明細
+                        </h2>
+                        <span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-md font-bold">自動擴展最後一行</span>
+                    </div>
+
+                    <!-- 【桌機寬版模式 表格】 -->
+                    <div id="desktop-items-container" class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse min-w-[700px]">
+                            <thead>
+                                <tr class="bg-white border-b border-slate-200">
+                                    <th class="w-12 py-3 px-4 text-center font-bold text-slate-400 text-xs uppercase">#</th>
+                                    <th class="py-3 px-4 font-bold text-slate-600 text-xs uppercase w-2/5">品項名稱 (商品描述) <span class="text-rose-500">*</span></th>
+                                    <th class="w-24 py-3 px-4 font-bold text-slate-600 text-xs uppercase text-right">數量 <span class="text-rose-500">*</span></th>
+                                    <th class="w-32 py-3 px-4 font-bold text-slate-600 text-xs uppercase text-right">單價(未稅) <span class="text-rose-500">*</span></th>
+                                    <th class="w-32 py-3 px-4 font-bold text-slate-600 text-xs uppercase text-right">小計</th>
+                                    <th class="w-16 py-3 px-4 text-center font-bold text-slate-400 text-xs uppercase">移除</th>
+                                </tr>
+                            </thead>
+                            <tbody id="desktop-items-tbody" class="divide-y divide-slate-100 bg-white">
+                                <!-- JS 自動生成列 -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- 【手機觸控模式 卡片】 -->
+                    <div id="mobile-items-container" class="hidden p-4 space-y-4 bg-slate-50/50">
+                        <div id="mobile-items-list" class="space-y-4">
+                            <!-- JS 自動生成卡片 -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 金額結算與備註區塊 -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <!-- 左側備註區 -->
+                    <div class="lg:col-span-7 space-y-4">
+                        <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 h-full">
+                            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                <i class="fa-regular fa-comment-dots text-indigo-500"></i> 單據備註事項
+                            </label>
+                            <textarea id="overallNotes" rows="4" class="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-colors resize-none placeholder-slate-400" placeholder="例如：客戶要求下午到貨、需特殊包裝..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- 右側金額結算區 -->
+                    <div class="lg:col-span-5">
+                        <div class="bg-slate-800 rounded-2xl shadow-lg border border-slate-700 overflow-hidden text-white relative">
+                            <!-- 背景裝飾 -->
+                            <div class="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-slate-700/50 blur-2xl pointer-events-none"></div>
+                            
+                            <div class="p-6 space-y-5 relative z-10">
+                                <div class="flex justify-between items-center pb-4 border-b border-slate-700/80">
+                                    <span class="text-sm font-medium text-slate-400">原始合計 (未稅)</span>
+                                    <span class="text-xl font-bold font-mono tracking-tight">$<span id="display-raw-total">0</span></span>
+                                </div>
+                                
+                                <div class="space-y-3 pb-4 border-b border-slate-700/80">
+                                    <div class="flex justify-between items-center">
+                                        <label class="text-sm font-medium text-slate-400">套用折扣 (%)</label>
+                                        <div class="flex items-center gap-2 bg-slate-900/50 rounded-lg p-1 border border-slate-700">
+                                            <input type="number" id="discountRate" value="100" min="1" max="100" class="w-16 bg-transparent border-none text-right text-white font-mono font-bold focus:outline-none focus:ring-0 text-lg px-2">
+                                            <span class="text-slate-500 font-bold pr-2">%</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 折讓原因：改用穩定的 hidden 類別做切換，解決 iPad 兼容問題 -->
+                                    <div id="discount-reason-container" class="hidden mt-3 pt-3 border-t border-slate-700/50">
+                                        <label class="block text-xs font-bold text-rose-300 mb-1"><i class="fa-solid fa-circle-exclamation"></i> 特殊折讓原因 (必填)</label>
+                                        <input type="text" id="discountReason" placeholder="請簡述為何提供折扣..." class="w-full rounded-lg border border-rose-500/50 bg-rose-950/30 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-rose-500 transition-colors placeholder-rose-300/50">
+                                    </div>
+                                </div>
+
+                                <div class="flex justify-between items-end pt-2">
+                                    <span class="text-sm font-bold text-indigo-300 uppercase tracking-wider">本單應收大計</span>
+                                    <div class="text-right">
+                                        <span class="block text-xs text-slate-400 mb-1">未含稅金 (TWD)</span>
+                                        <span class="text-4xl font-extrabold font-mono tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-indigo-200 via-white to-indigo-100">$<span id="display-grand-total">0</span></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 底部按鈕群 -->
+                <div class="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-slate-200">
+                    <button type="button" onclick="setSubmitTypeAndSubmit('Quotation')" class="px-6 py-3.5 bg-white border border-slate-300 text-slate-700 font-bold rounded-xl hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-slate-100 transition-all flex items-center justify-center gap-2 shadow-sm order-2 sm:order-1 cursor-pointer">
+                        <i class="fa-regular fa-file-lines"></i> <span id="btn-quote-text">僅存為報價單</span>
+                    </button>
+                    <button type="button" onclick="setSubmitTypeAndSubmit('Order')" class="px-8 py-3.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-200 transition-all flex items-center justify-center gap-2 shadow-md shadow-indigo-200 order-1 sm:order-2 cursor-pointer">
+                        <i class="fa-solid fa-check-double"></i> <span id="btn-order-text">確認送出 (成立訂購單)</span>
+                    </button>
+                    <!-- 隱藏的實際提交按鈕 (為了觸發 HTML5 驗證) -->
+                    <button type="submit" id="hidden-submit-btn" class="hidden"></button>
+                </div>
+            </form>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- 視圖 2: 後台管理/業助端 (Admin View) -->
+        <!-- ============================================== -->
+        <div id="admin-view" class="hidden space-y-6">
+            <!-- 後台核心面板 -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">累計報價總量</span>
+                        <span id="stat-quotations" class="text-3xl font-extrabold text-slate-800 block mt-1">0</span>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-slate-50 text-slate-500 flex items-center justify-center text-xl">
+                        <i class="fa-regular fa-file-lines"></i>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">成立訂單件數</span>
+                        <span id="stat-orders" class="text-3xl font-extrabold text-indigo-600 block mt-1">0</span>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-file-invoice-dollar"></i>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">銷貨與出貨進度</span>
+                        <span class="text-2xl font-extrabold text-slate-800 block mt-1">
+                            <span id="stat-invoiced" class="text-amber-600" title="待業務覆核">0</span> <span class="text-[10px] text-slate-400 font-normal">待覆核</span>
+                            <span class="text-slate-300 font-normal mx-0.5">/</span>
+                            <span id="stat-preparing" class="text-emerald-600" title="備貨中">0</span> <span class="text-[10px] text-slate-400 font-normal">備貨</span>
+                            <span class="text-slate-300 font-normal mx-0.5">/</span>
+                            <span id="stat-shipped" class="text-indigo-600" title="已完成出貨">0</span> <span class="text-[10px] text-slate-400 font-normal">已出</span>
+                        </span>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-truck-fast"></i>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">總累計營業額</span>
+                        <span id="stat-revenue" class="text-2xl font-extrabold text-rose-600 font-mono tracking-tight block mt-1">$0</span>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-sack-dollar"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 單據列表區塊 -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden flex flex-col h-[600px]">
+                <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50">
+                    <h2 class="text-lg font-extrabold text-slate-800 tracking-tight"><i class="fa-solid fa-table-list text-indigo-500 mr-2"></i> 單據總表</h2>
+                    
+                    <div class="flex flex-col sm:flex-row w-full sm:w-auto gap-3">
+                        <div class="relative w-full sm:w-64">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-magnifying-glass text-slate-400"></i>
+                            </div>
+                            <input type="text" id="searchInput" onkeyup="window.renderOrderList()" placeholder="搜尋單號 / 客戶 / 業務..." class="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-colors">
+                        </div>
+                        <select id="filterType" onchange="window.renderOrderList()" class="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 bg-white cursor-pointer">
+                            <option value="ALL">顯示全部狀態</option>
+                            <option value="Quotation">僅報價單 (草稿)</option>
+                            <option value="Order">待轉銷貨單 (訂單)</option>
+                            <option value="Invoiced">已登錄銷貨單 (待覆核)</option>
+                            <option value="Preparing">備貨中 (待出貨)</option>
+                            <option value="Shipped">已完成出貨</option>
+                        </select>
+                        <button onclick="exportToCSV()" class="px-4 py-2 bg-slate-800 text-white text-sm font-bold rounded-lg hover:bg-slate-700 transition-colors flex items-center justify-center gap-2 shadow-sm whitespace-nowrap cursor-pointer">
+                            <i class="fa-solid fa-file-export"></i> 匯出 CSV
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex-grow overflow-auto relative">
+                    <table class="w-full text-left border-collapse min-w-[850px]">
+                        <thead class="sticky top-0 bg-white shadow-sm z-10">
+                            <tr class="border-b border-slate-200">
+                                <th class="py-3 px-6 font-bold text-slate-500 text-xs uppercase tracking-wider w-24">單號日期</th>
+                                <th class="py-3 px-6 font-bold text-slate-500 text-xs uppercase tracking-wider w-32">類別 / 單號</th>
+                                <th class="py-3 px-6 font-bold text-slate-500 text-xs uppercase tracking-wider">客戶名稱 / 負責業務</th>
+                                <th class="py-3 px-6 font-bold text-slate-500 text-xs uppercase tracking-wider w-24">總金額</th>
+                                <th class="py-3 px-6 font-bold text-slate-500 text-xs uppercase tracking-wider w-32">當前狀態</th>
+                                <th class="py-3 px-6 font-bold text-slate-500 text-xs uppercase tracking-wider text-right w-72">操作管理</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orders-tbody" class="divide-y divide-slate-100 bg-white">
+                            <!-- JS 自動生成列表 -->
+                            <tr>
+                                <td colspan="6" class="py-12 text-center text-slate-400">
+                                    <i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><br>資料載入中...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <p class="text-xs text-slate-400 text-center"><i class="fa-solid fa-hand-pointer mr-1"></i> 平板設備使用者，若表格超出螢幕，請在表格區域內左右滑動以檢視操作按鈕。</p>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- 視圖 3: 基礎數據管理 (Settings View) -->
+        <!-- ============================================== -->
+        <div id="settings-view" class="hidden space-y-6">
+            <div class="mb-6">
+                <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight"><i class="fa-solid fa-database text-indigo-600 mr-2"></i>基礎數據管理</h1>
+                <p class="text-sm text-slate-500 mt-1">管理各項表單下拉選單之預設資料與編號 (更新時將連動更新所有歷史單據)</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <!-- ☁️ 雲端同步與多台電腦連線設定面板 (重要新增) -->
+                <div class="bg-white rounded-2xl shadow-sm border border-indigo-200 overflow-hidden col-span-1 md:col-span-2 p-6 space-y-4">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-3 gap-2">
+                        <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+                            <i class="fa-solid fa-cloud text-indigo-600 animate-pulse"></i> 多裝置雲端同步與資料庫設定
+                        </h3>
+                        <span id="cloud-badge" class="px-2.5 py-1 text-xs font-bold rounded-full bg-slate-100 text-slate-500">
+                            偵測連線狀態中...
+                        </span>
+                    </div>
+                    
+                    <p class="text-xs text-slate-500 leading-relaxed">
+                        本系統內建「Google Firebase Firestore」即時雲端同步。您只需建立一個免費的 Firebase 專案並填入下方配置，即可在**多台電腦、平板、手機**上同步操作，所有單據、報價、基礎設定都將**即時秒級更新**。
+                    </p>
+
+                    <form id="cloud-config-form" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
+                        <div class="space-y-1">
+                            <label class="block font-bold text-slate-600">自訂應用程式識別號 (App ID / 專案名)</label>
+                            <input type="text" id="cloud-app-id" placeholder="例如: easyorder-pro-sales" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-500/50 focus:outline-none">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block font-bold text-slate-600">API Key (apiKey)</label>
+                            <input type="password" id="cloud-apiKey" placeholder="AIzaSy..." class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-500/50 focus:outline-none">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block font-bold text-slate-600">驗證網域 (authDomain)</label>
+                            <input type="text" id="cloud-authDomain" placeholder="xxx.firebaseapp.com" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-500/50 focus:outline-none">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block font-bold text-slate-600">專案ID (projectId)</label>
+                            <input type="text" id="cloud-projectId" placeholder="my-project-id" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-500/50 focus:outline-none">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block font-bold text-slate-600">儲存貯體 (storageBucket)</label>
+                            <input type="text" id="cloud-storageBucket" placeholder="xxx.appspot.com" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-500/50 focus:outline-none">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="block font-bold text-slate-600">應用程式ID (appId)</label>
+                            <input type="text" id="cloud-firebaseAppId" placeholder="1:123456:web:abcd" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-500/50 focus:outline-none">
+                        </div>
+
+                        <div class="col-span-1 sm:col-span-2 lg:col-span-3 flex flex-col sm:flex-row justify-between items-center pt-2 gap-3">
+                            <button type="button" onclick="window.clearCloudConfig()" class="text-rose-600 hover:text-rose-800 font-bold transition-colors text-xs order-2 sm:order-1">
+                                <i class="fa-solid fa-trash-can mr-1"></i> 中斷雲端連線 (回復為單機)
+                            </button>
+                            <button type="button" onclick="window.saveCustomCloudConfig()" class="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer text-xs order-1 sm:order-2">
+                                <i class="fa-solid fa-cloud-arrow-up"></i> 測試並啟用雲端同步
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- 客戶名單管理 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 flex flex-col h-[400px]">
+                    <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                        <h3 class="font-bold text-slate-800"><i class="fa-solid fa-users text-indigo-500 mr-1.5"></i>獨立客戶名單</h3>
+                    </div>
+                    <div class="p-4 border-b border-slate-100">
+                        <form onsubmit="window.handleAddCustomer(event)" class="flex gap-2">
+                            <input type="text" id="new-customer-code" placeholder="客戶編號(選)" class="w-1/3 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 font-mono">
+                            <input type="text" id="new-customer-name" placeholder="輸入客戶名稱(必填)" required class="w-2/3 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+                            <button type="submit" class="px-4 py-2 bg-indigo-50 text-indigo-600 font-bold text-sm rounded-lg hover:bg-indigo-100 transition-colors whitespace-nowrap cursor-pointer">新增</button>
+                        </form>
+                    </div>
+                    <div class="flex-grow overflow-y-auto p-4">
+                        <ul id="settings-customers-list" class="space-y-2">
+                            <!-- JS 渲染 -->
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 業務人員管理 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 flex flex-col h-[400px]">
+                    <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                        <h3 class="font-bold text-slate-800"><i class="fa-solid fa-id-badge text-indigo-500 mr-1.5"></i>業務人員名單</h3>
+                    </div>
+                    <div class="p-4 border-b border-slate-100">
+                        <form onsubmit="window.handleAddSalesRep(event)" class="flex gap-2">
+                            <input type="text" id="new-salesrep-code" placeholder="業務編號(選)" class="w-1/3 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 font-mono">
+                            <input type="text" id="new-salesrep-name" placeholder="輸入業務姓名..." required class="w-2/3 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+                            <button type="submit" class="px-4 py-2 bg-indigo-50 text-indigo-600 font-bold text-sm rounded-lg hover:bg-indigo-100 transition-colors whitespace-nowrap cursor-pointer">新增</button>
+                        </form>
+                    </div>
+                    <div class="flex-grow overflow-y-auto p-4">
+                        <ul id="settings-salesreps-list" class="space-y-2">
+                            <!-- JS 渲染 -->
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- 發票開立方式管理 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 flex flex-col h-[400px]">
+                    <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                        <h3 class="font-bold text-slate-800"><i class="fa-solid fa-file-invoice text-indigo-500 mr-1.5"></i>發票開立方式</h3>
+                    </div>
+                    <div class="p-4 border-b border-slate-100">
+                        <form onsubmit="window.handleAddBasisData(event, 'invoiceMethods', 'new-invoice-input')" class="flex gap-2">
+                            <input type="text" id="new-invoice-input" placeholder="輸入發票開立方式..." required class="flex-grow rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+                            <button type="submit" class="px-4 py-2 bg-indigo-50 text-indigo-600 font-bold text-sm rounded-lg hover:bg-indigo-100 transition-colors whitespace-nowrap cursor-pointer">新增</button>
+                        </form>
+                    </div>
+                    <div class="flex-grow overflow-y-auto p-4">
+                        <ul id="settings-invoicemethods-list" class="space-y-2">
+                            <!-- JS 渲染 -->
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 出貨管道管理 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 flex flex-col h-[400px]">
+                    <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                        <h3 class="font-bold text-slate-800"><i class="fa-solid fa-truck text-indigo-500 mr-1.5"></i>出貨管道/方式</h3>
+                    </div>
+                    <div class="p-4 border-b border-slate-100">
+                        <form onsubmit="window.handleAddBasisData(event, 'deliveryMethods', 'new-delivery-input')" class="flex gap-2">
+                            <input type="text" id="new-delivery-input" placeholder="輸入出貨方式..." required class="flex-grow rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+                            <button type="submit" class="px-4 py-2 bg-indigo-50 text-indigo-600 font-bold text-sm rounded-lg hover:bg-indigo-100 transition-colors whitespace-nowrap cursor-pointer">新增</button>
+                        </form>
+                    </div>
+                    <div class="flex-grow overflow-y-auto p-4">
+                        <ul id="settings-deliverymethods-list" class="space-y-2">
+                            <!-- JS 渲染 -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ============================================== -->
+    <!-- 客製化彈出視窗與互動模態框 (相容 iPad 觸控) -->
+    <!-- ============================================== -->
+
+    <!-- 全局確認操作 Modal (取代原生 confirm) -->
+    <div id="confirm-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-[60] flex justify-center items-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-sm shadow-2xl transform transition-all p-6 text-center">
+            <div id="confirm-icon-container" class="w-16 h-16 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-3xl mx-auto mb-4">
+                <i class="fa-solid fa-triangle-exclamation" id="confirm-icon"></i>
+            </div>
+            <h3 class="text-lg font-bold text-slate-800 mb-2" id="confirm-title">確認操作</h3>
+            <p class="text-sm text-slate-500 mb-6" id="confirm-message">您確定要執行此操作嗎？</p>
+            <div class="flex justify-center gap-3">
+                <button id="confirm-cancel-btn" class="px-5 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors w-full cursor-pointer">取消</button>
+                <button id="confirm-ok-btn" class="px-5 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors w-full shadow-sm cursor-pointer">確定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 單據詳情 Modal (含業助銷貨/出貨操作) -->
+    <div id="order-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex justify-center items-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl transform transition-all border border-slate-200" onclick="event.stopPropagation()">
+            <!-- Header -->
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/80 rounded-t-2xl">
+                <div>
+                    <h3 class="text-lg font-extrabold text-slate-800">單據檢視 <span id="modal-doc-no" class="text-indigo-600 ml-2 font-mono"></span></h3>
+                    <p class="text-xs text-slate-500 mt-0.5">單據建立於: <span id="modal-date"></span></p>
+                </div>
+                <button onclick="closeModal('order-modal')" class="w-10 h-10 rounded-full bg-slate-200 hover:bg-rose-100 hover:text-rose-600 text-slate-500 flex items-center justify-center transition-colors cursor-pointer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <!-- Body -->
+            <div class="p-6 overflow-y-auto flex-grow space-y-6">
+                <!-- 狀態資訊列 -->
+                <div class="flex flex-wrap gap-3">
+                    <div class="px-3 py-1.5 bg-slate-100 rounded-lg border border-slate-200 text-sm">
+                        <span class="text-slate-500 text-xs block mb-0.5">單據類型</span>
+                        <span id="modal-type" class="font-bold text-slate-700"></span>
+                    </div>
+                    <div class="px-3 py-1.5 bg-slate-100 rounded-lg border border-slate-200 text-sm flex-grow sm:flex-grow-0">
+                        <span class="text-slate-500 text-xs block mb-0.5">負責業務</span>
+                        <span id="modal-sales" class="font-bold text-slate-700"></span>
+                    </div>
+                    <div class="px-3 py-1.5 bg-slate-100 rounded-lg border border-slate-200 text-sm flex-grow">
+                        <span class="text-slate-500 text-xs block mb-0.5">客戶資訊</span>
+                        <span id="modal-customer" class="font-bold text-slate-700"></span>
+                    </div>
+                    <!-- 關聯單據追溯區塊 -->
+                    <div class="px-3 py-1.5 bg-slate-100 rounded-lg border border-slate-200 text-sm hidden" id="modal-relation-container">
+                        <span class="text-slate-500 text-xs block mb-0.5">單據追溯關聯</span>
+                        <span id="modal-relation-link" class="font-bold text-indigo-600 block mt-0.5"></span>
+                    </div>
+                </div>
+
+                <!-- 內容網格 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <h4 class="font-bold text-slate-800 border-b border-slate-200 pb-2 text-sm"><i class="fa-solid fa-circle-info text-indigo-400 mr-1"></i>基本交易條件</h4>
+                        <ul class="space-y-2 text-sm">
+                            <li class="flex justify-between"><span class="text-slate-500">電子信箱:</span> <span id="modal-email" class="font-medium"></span></li>
+                            <li class="flex justify-between"><span class="text-slate-500">發票方式:</span> <span id="modal-invoice-method" class="font-medium"></span></li>
+                            <li class="flex justify-between"><span class="text-slate-500">出貨管道:</span> <span id="modal-delivery-method" class="font-medium"></span></li>
+                            <li class="flex justify-between"><span class="text-slate-500">業務備註:</span></li>
+                        </ul>
+                        <div class="bg-amber-50/50 border border-amber-100 p-3 rounded-xl text-sm text-amber-800 whitespace-pre-wrap min-h-[60px]" id="modal-notes"></div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <h4 class="font-bold text-slate-800 border-b border-slate-200 pb-2 text-sm"><i class="fa-solid fa-file-invoice text-indigo-400 mr-1"></i>業助銷貨登錄狀態</h4>
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 h-[190px] flex flex-col justify-center">
+                            <div class="text-center mb-3">
+                                <span class="block text-xs text-slate-500 mb-1">目前銷貨狀態</span>
+                                <div id="modal-sales-slip-status" class="text-sm"></div>
+                            </div>
+                            
+                            <!-- 助理回填銷貨單號區 (僅當訂單狀態時顯示) -->
+                            <div id="assistant-invoice-area" class="mt-2 hidden">
+                                <form onsubmit="submitInvoiceNo(event)" class="flex gap-2">
+                                    <input type="hidden" id="modal-hidden-order-id">
+                                    <input type="text" id="assistant-invoice-input" placeholder="輸入ERP銷貨單號回填..." required class="flex-grow rounded-lg border border-indigo-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+                                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white font-bold text-sm rounded-lg hover:bg-indigo-700 transition-colors whitespace-nowrap shadow-sm cursor-pointer">
+                                        轉銷貨登錄
+                                    </button>
+                                </form>
+                            </div>
+
+                            <!-- 業務覆核區 (僅當已登錄銷貨時顯示) -->
+                            <div id="sales-approve-area" class="mt-2 hidden text-center">
+                                <button onclick="window.confirmApprove()" class="w-full px-4 py-3 bg-sky-600 text-white font-bold text-sm rounded-lg hover:bg-sky-700 transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer">
+                                    <i class="fa-solid fa-clipboard-check"></i> 業務確認覆核無誤 (轉入備貨)
+                                </button>
+                                <p class="text-[10px] text-slate-400 mt-2">請確認銷貨內容無誤後放行</p>
+                            </div>
+
+                            <!-- 出貨確認區 (僅當備貨中時顯示) -->
+                            <div id="shipper-delivery-area" class="mt-2 hidden text-center">
+                                <button onclick="window.confirmShipping()" class="w-full px-4 py-3 bg-emerald-600 text-white font-bold text-sm rounded-lg hover:bg-emerald-700 transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer">
+                                    <i class="fa-solid fa-truck-fast"></i> 確認完成商品出貨
+                                </button>
+                                <p class="text-[10px] text-slate-400 mt-2">記錄出貨時間並完成整筆訂單流程</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 品項明細表格 -->
+                <div>
+                    <h4 class="font-bold text-slate-800 border-b border-slate-200 pb-2 mb-3 text-sm"><i class="fa-solid fa-box-open text-indigo-400 mr-1"></i>品項明細清單</h4>
+                    <div class="border border-slate-200 rounded-xl overflow-hidden overflow-x-auto">
+                        <table class="w-full text-left text-sm min-w-[500px]">
+                            <thead class="bg-slate-50 border-b border-slate-200">
+                                <tr>
+                                    <th class="py-2 px-4 text-slate-700 font-bold">品項</th>
+                                    <th class="py-2 px-4 text-slate-700 font-bold text-right w-16">數量</th>
+                                    <th class="py-2 px-4 text-slate-700 font-bold text-right w-24">單價</th>
+                                    <th class="py-2 px-4 text-slate-700 font-bold text-right w-24">小計</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modal-items-tbody" class="divide-y divide-slate-100">
+                                <!-- JS 生成 -->
+                            </tbody>
+                            <tfoot class="bg-slate-50 border-t border-slate-200">
+                                <tr>
+                                    <td colspan="3" class="py-2 px-4 text-right font-medium text-slate-500">原始合計 (未稅)</td>
+                                    <td class="py-2 px-4 text-right font-bold" id="modal-raw-total"></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" class="py-2 px-4 text-right font-medium text-slate-500">套用折扣</td>
+                                    <td class="py-2 px-4 text-right text-rose-600 font-bold"><span id="modal-discount-rate"></span>%</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4" class="py-1 px-4 text-right text-xs text-rose-500" id="modal-discount-reason"></td>
+                                </tr>
+                                <tr class="bg-indigo-50">
+                                    <td colspan="3" class="py-3 px-4 text-right font-extrabold text-indigo-800 text-base">應收大計 (未稅)</td>
+                                    <td class="py-3 px-4 text-right font-extrabold text-indigo-800 text-lg" id="modal-grand-total"></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 rounded-b-2xl flex justify-end">
+                <button onclick="closeModal('order-modal')" class="px-6 py-2.5 bg-white border border-slate-300 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition-colors cursor-pointer">關閉視窗</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 基礎資料編輯 Modal -->
+    <div id="edit-basis-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex justify-center items-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-sm shadow-2xl transform transition-all">
+            <div class="p-5 border-b border-slate-100 flex justify-between items-center">
+                <h3 class="font-bold text-slate-800" id="edit-basis-title">編輯項目</h3>
+                <button onclick="closeModal('edit-basis-modal')" class="text-slate-400 hover:text-slate-600 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form onsubmit="window.submitEditBasis(event)" class="p-5 space-y-4">
+                <input type="hidden" id="edit-basis-col">
+                <input type="hidden" id="edit-basis-id">
+                <input type="hidden" id="edit-basis-old-val">
+                <div id="edit-basis-code-container" class="hidden">
+                    <label class="block text-xs font-bold text-slate-600 mb-1" id="edit-basis-code-label">編號 (選填)</label>
+                    <input type="text" id="edit-basis-code" class="w-full rounded-lg border border-slate-300 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 font-mono">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1" id="edit-basis-name-label">名稱值</label>
+                    <input type="text" id="edit-basis-input" required class="w-full rounded-lg border border-slate-300 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" onclick="closeModal('edit-basis-modal')" class="px-5 py-2.5 bg-white border border-slate-300 text-slate-700 text-sm font-bold rounded-lg hover:bg-slate-50 cursor-pointer">取消</button>
+                    <button type="submit" class="px-5 py-2.5 bg-indigo-600 text-white text-sm font-bold rounded-lg hover:bg-indigo-700 cursor-pointer shadow-sm">儲存變更</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Firebase / 邏輯腳本 -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // 全域狀態變數
+        window.appId = typeof __app_id !== 'undefined' ? __app_id : 'easy-order-pro-1';
+        window.dbStatus = "local"; 
+        window.db = null;
+        window.auth = null;
+        window.ordersData = []; 
+        window.basisData = {
+            customers: [],
+            salesReps: [],
+            invoiceMethods: [],
+            deliveryMethods: []
+        };
+        
+        let currentUser = null; // 儲存經身分驗證後的 user 物件
+
+        // 用於編輯模式
+        window.editingOrderId = null;
+        window.clonedFromDocNo = null; // 用於追蹤是否為複製單據
+        window.originView = null; 
+        window.formPreviewMode = 'desktop';
+
+        // 嘗試初始化資料庫
+        async function initializeDatabase() {
+            let config = null;
+            let targetAppId = 'easy-order-pro-1';
+
+            // 1. 優先檢查環境變數（系統運行時自備的 Firebase）
+            if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+                try {
+                    config = JSON.parse(__firebase_config);
+                    targetAppId = typeof __app_id !== 'undefined' ? __app_id : 'easy-order-pro-1';
+                } catch(e) {
+                    console.error("解析系統內嵌配置出錯:", e);
+                }
+            } 
+            // 2. 次之讀取使用者自訂配置（LocalStorage 儲存之跨裝置資料庫）
+            else {
+                const savedConfig = localStorage.getItem("custom_firebase_config");
+                if (savedConfig) {
+                    try {
+                        const parsed = JSON.parse(savedConfig);
+                        config = parsed.config;
+                        targetAppId = parsed.appId || 'easy-order-pro-1';
+                    } catch(e) {
+                        console.error("解析自訂 Firebase 配置出錯:", e);
+                    }
+                }
+            }
+
+            window.appId = targetAppId;
+
+            if (config) {
+                try {
+                    const app = initializeApp(config);
+                    window.auth = getAuth(app);
+                    window.db = getFirestore(app);
+
+                    // RULE 3 - 先行並等待身分認證 (Anonymous / Token)
+                    let userCredential;
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        userCredential = await signInWithCustomToken(window.auth, __initial_auth_token);
+                    } else {
+                        userCredential = await signInAnonymously(window.auth);
+                    }
+
+                    currentUser = userCredential.user;
+                    window.dbStatus = "firebase";
+
+                    onAuthStateChanged(window.auth, (user) => {
+                        if (user) {
+                            currentUser = user;
+                            window.dbStatus = "firebase";
+                            
+                            // 更新橫幅
+                            const banner = document.getElementById("connection-banner");
+                            banner.className = "bg-emerald-50 border-b border-emerald-200 text-emerald-700 py-2 px-4 text-xs font-bold text-center shadow-inner block";
+                            banner.innerHTML = `<i class="fa-solid fa-cloud text-emerald-500 mr-1 animate-bounce"></i> 雲端同步中 - 多裝置數據已即時同步 (AppID: ${window.appId})`;
+                            
+                            listenToFirestore();
+                        } else {
+                            fallbackToLocal("連線中斷");
+                        }
+                    });
+
+                } catch (error) {
+                    console.error("Firebase 連線初始化失敗:", error);
+                    fallbackToLocal("雲端連線失敗 (配置有誤或無網路)");
+                }
+            } else {
+                fallbackToLocal("無雲端設定 (單機運作中)");
+            }
+        }
+
+        function fallbackToLocal(reason) {
+            console.warn(`目前使用本地單機儲存: ${reason}`);
+            window.dbStatus = "local";
+            const banner = document.getElementById("connection-banner");
+            banner.classList.remove("hidden");
+            banner.className = "bg-amber-50 border-b border-amber-200 text-amber-700 py-2 px-4 text-xs font-bold text-center shadow-inner block";
+            banner.innerHTML = `<i class="fa-solid fa-wifi text-amber-500 mr-1 animate-pulse"></i> 目前使用單機離線模式 (資料儲存於本機瀏覽器)，若需跨設備連線請至「基礎數據管理」設定雲端資料庫。`;
+            
+            loadLocalData();
+        }
+
+        // ==========================================
+        // 觸控相容的客製化 Confirm 彈出視窗
+        // ==========================================
+        window.showConfirm = function(title, message, onConfirmCallback, type="warning") {
+            const modal = document.getElementById('confirm-modal');
+            const titleEl = document.getElementById('confirm-title');
+            const messageEl = document.getElementById('confirm-message');
+            const iconEl = document.getElementById('confirm-icon');
+            const iconContainer = document.getElementById('confirm-icon-container');
+            const okBtn = document.getElementById('confirm-ok-btn');
+            const cancelBtn = document.getElementById('confirm-cancel-btn');
+
+            titleEl.innerText = title;
+            messageEl.innerText = message;
+
+            if(type === 'danger') {
+                iconContainer.className = "w-16 h-16 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-3xl mx-auto mb-4";
+                iconEl.className = "fa-solid fa-trash-can";
+                okBtn.className = "px-5 py-3 bg-rose-600 text-white font-bold rounded-xl hover:bg-rose-700 transition-colors w-full shadow-sm cursor-pointer";
+            } else if(type === 'success') {
+                iconContainer.className = "w-16 h-16 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center text-3xl mx-auto mb-4";
+                iconEl.className = "fa-solid fa-clipboard-check";
+                okBtn.className = "px-5 py-3 bg-sky-600 text-white font-bold rounded-xl hover:bg-sky-700 transition-colors w-full shadow-sm cursor-pointer";
+            } else {
+                iconContainer.className = "w-16 h-16 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-3xl mx-auto mb-4";
+                iconEl.className = "fa-solid fa-triangle-exclamation";
+                okBtn.className = "px-5 py-3 bg-amber-500 text-white font-bold rounded-xl hover:bg-amber-600 transition-colors w-full shadow-sm cursor-pointer";
+            }
+
+            const newOkBtn = okBtn.cloneNode(true);
+            okBtn.parentNode.replaceChild(newOkBtn, okBtn);
+            const newCancelBtn = cancelBtn.cloneNode(true);
+            cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+
+            newOkBtn.addEventListener('click', () => {
+                modal.classList.add('hidden');
+                if (onConfirmCallback) onConfirmCallback();
+            });
+
+            newCancelBtn.addEventListener('click', () => {
+                modal.classList.add('hidden');
+            });
+
+            modal.classList.remove('hidden');
+        }
+
+        // ==========================================
+        // 核心資料解析機制 (關聯 ID 與 實際名稱)
+        // 雙向相容機制：若 ID 暫時對不上，依據名稱自動補齊
+        // ==========================================
+        window.resolveOrderData = function(order) {
+            let resolved = { ...order };
+            
+            // 優先以儲存的 ID 去基礎數據中尋找對應最新資料
+            if (order.customerId) {
+                let c = window.basisData.customers.find(x => x.id === order.customerId);
+                if (!c && order.customerName) {
+                    c = window.basisData.customers.find(x => x.name === order.customerName);
+                    if (c) resolved.customerId = c.id; 
+                }
+                if (c) {
+                    resolved.customerCode = c.code || "";
+                    resolved.customerName = c.name || "";
+                }
+            } else if (order.customerName) {
+                const c = window.basisData.customers.find(x => x.name === order.customerName);
+                if (c) {
+                    resolved.customerId = c.id;
+                    resolved.customerCode = c.code || "";
+                }
+            }
+
+            if (order.salesRepId) {
+                let s = window.basisData.salesReps.find(x => x.id === order.salesRepId);
+                if (!s && order.salesRep) {
+                    s = window.basisData.salesReps.find(x => x.name === order.salesRep);
+                    if (s) resolved.salesRepId = s.id;
+                }
+                if (s) {
+                    resolved.salesRepCode = s.code || "";
+                    resolved.salesRep = s.name || "";
+                }
+            } else if (order.salesRep) {
+                const s = window.basisData.salesReps.find(x => x.name === order.salesRep);
+                if (s) {
+                    resolved.salesRepId = s.id;
+                    resolved.salesRepCode = s.code || "";
+                }
+            }
+            return resolved;
+        };
+
+        // ==========================================
+        // Firebase 監聽與基礎資料建置
+        // ==========================================
+        function listenToFirestore() {
+            // RULE 3: 限制認證完成後再執行
+            if (!window.db || !currentUser) return;
+            
+            // RULE 1: 使用嚴格公共資料路徑
+            const ordersRef = collection(window.db, 'artifacts', window.appId, 'public', 'data', 'orders');
+            onSnapshot(ordersRef, (snapshot) => {
+                let freshData = [];
+                snapshot.forEach(doc => freshData.push({ id: doc.id, ...doc.data() }));
+                // RULE 2: 不在查詢中使用 orderBy，使用記憶體 JavaScript 排序
+                freshData.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+                window.ordersData = freshData;
+                
+                if (freshData.length === 0) {
+                    insertInitialTestOrders(ordersRef);
+                }
+
+                renderOrderList();
+                updateDashboardStats();
+                loadCloudConfigFields(); // 更新狀態顯示
+            }, (error) => {
+                console.error("監聽 Orders 錯誤:", error);
+            });
+
+            const collectionsToListen = [
+                { name: 'customers', key: 'customers', initData: [{code: 'C001', name: '台灣積體電路製造 (TSMC)'}, {code: 'C002', name: '聯發科技 (MediaTek)'}, {code: 'C003', name: '鴻海精密 (Foxconn)'}] },
+                { name: 'salesReps', key: 'salesReps', initData: [{code: 'S001', name: '王小明 (Leo)'}, {code: 'S002', name: '陳雅婷 (Tina)'}, {code: 'S003', name: '林建國 (Ken)'}] },
+                { name: 'invoiceMethods', key: 'invoiceMethods', initData: [{name: '二聯式電子發票'}, {name: '三聯式電子發票'}, {name: '紙本手開三聯'}, {name: '免開發票(收據)'}] },
+                { name: 'deliveryMethods', key: 'deliveryMethods', initData: [{name: '公司車專送'}, {name: '黑貓宅急便'}, {name: '新竹物流'}, {name: '客戶自取'}] }
+            ];
+
+            collectionsToListen.forEach(meta => {
+                const colRef = collection(window.db, 'artifacts', window.appId, 'public', 'data', meta.name);
+                onSnapshot(colRef, (snapshot) => {
+                    let items = [];
+                    snapshot.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
+                    
+                    if (items.length === 0) {
+                        insertInitialBasisData(colRef, meta.initData);
+                    } else {
+                        window.basisData[meta.key] = items.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+                        renderDropdownsAndSettings();
+                        renderOrderList();
+                    }
+                }, err => console.error(`監聽 ${meta.name} 錯誤:`, err));
+            });
+        }
+
+        async function insertInitialBasisData(colRef, arr) {
+            if (!currentUser) return;
+            for (const item of arr) {
+                const newDocRef = doc(colRef);
+                await setDoc(newDocRef, { ...item, createdAt: new Date().toISOString() });
+            }
+        }
+
+        async function insertInitialTestOrders(colRef) {
+            if (!currentUser) return;
+            const demoData = getDemoOrdersPayload();
+            for (const item of demoData) {
+                const newDocRef = doc(colRef);
+                await setDoc(newDocRef, item);
+            }
+        }
+
+        // ==========================================
+        // LocalStorage 單機模式處理
+        // ==========================================
+        function loadLocalData() {
+            const lsOrders = localStorage.getItem("easyorder_orders");
+            if (lsOrders) {
+                window.ordersData = JSON.parse(lsOrders);
+            } else {
+                window.ordersData = getDemoOrdersPayload().map((d, i) => ({ id: `local_o_${Date.now()}_${i}`, ...d }));
+                localStorage.setItem("easyorder_orders", JSON.stringify(window.ordersData));
+            }
+
+            const lsBasis = localStorage.getItem("easyorder_basis");
+            if (lsBasis) {
+                window.basisData = JSON.parse(lsBasis);
+            } else {
+                window.basisData = {
+                    customers: [{id:'c1', code: 'C001', name: '台灣積體電路製造 (TSMC)'}, {id:'c2', code: 'C002', name: '聯發科技 (MediaTek)'}, {id:'c3', code: 'C003', name: '鴻海精密 (Foxconn)'}],
+                    salesReps: [{id:'s1', code: 'S001', name: '王小明 (Leo)'}, {id:'s2', code: 'S002', name: '陳雅婷 (Tina)'}, {id:'s3', code: 'S003', name: '林建國 (Ken)'}],
+                    invoiceMethods: [{id:'i1', name: '二聯式電子發票'}, {id:'i2', name: '三聯式電子發票'}, {id:'i3', name: '紙本手開三聯'}, {id:'i4', name: '免開發票(收據)'}],
+                    deliveryMethods: [{id:'d1', name: '公司車專送'}, {id:'d2', name: '黑貓宅急便'}, {id:'d3', name: '新竹物流'}, {id:'d4', name: '客戶自取'}]
+                };
+                localStorage.setItem("easyorder_basis", JSON.stringify(window.basisData));
+            }
+
+            renderDropdownsAndSettings();
+            renderOrderList();
+            updateDashboardStats();
+            loadCloudConfigFields(); // 更新單機狀態
+        }
+
+        function getDemoOrdersPayload() {
+            const now = new Date();
+            const formatYYMMDD = (d) => {
+                const yy = String(d.getFullYear()).slice(-2);
+                const mm = String(d.getMonth() + 1).padStart(2, '0');
+                const dd = String(d.getDate()).padStart(2, '0');
+                return `${yy}${mm}${dd}`;
+            };
+
+            const d1Date = new Date(now.getTime() - 86400000 * 2); 
+            const d2Date = new Date(now.getTime() - 86400000 * 1); 
+            const d3Date = new Date(); 
+
+            const d1 = d1Date.toISOString();
+            const d2 = d2Date.toISOString();
+            const d3 = d3Date.toISOString();
+
+            return [
+                {
+                    type: "Quotation", status: "Draft", docNo: `QT-${formatYYMMDD(d1Date)}-01`, refQuotationNo: "",
+                    customerId: 'c1', customerCode: "C001", customerName: "台灣積體電路製造 (TSMC)", salesRepId: 's1', salesRepCode: "S001", salesRep: "王小明 (Leo)", email: "procurement@tsmc.example.com",
+                    invoiceMethod: "三聯式電子發票", deliveryMethod: "公司車專送",
+                    items: [
+                        { name: "高效能伺服器機櫃 Type-A", qty: 2, price: 45000, subtotal: 90000 },
+                        { name: "不斷電系統 3000VA", qty: 2, price: 12000, subtotal: 24000 }
+                    ],
+                    overallNotes: "客戶要求提供三年保固證明。",
+                    rawTotal: 114000, discountRate: 95, discountReason: "年度大客戶專案折扣", grandTotal: 108300,
+                    createdAt: d1, updatedAt: d1, salesSlipNo: "", shippingDate: null
+                },
+                {
+                    type: "Order", status: "Order", docNo: `OD-${formatYYMMDD(d2Date)}-01`, refQuotationNo: `QT-${formatYYMMDD(d1Date)}-01`,
+                    customerId: 'c2', customerCode: "C002", customerName: "聯發科技 (MediaTek)", salesRepId: 's2', salesRepCode: "S002", salesRep: "陳雅婷 (Tina)", email: "admin@mediatek.example.com",
+                    invoiceMethod: "三聯式電子發票", deliveryMethod: "新竹物流",
+                    items: [
+                        { name: "商務筆記型電腦 ProBook 15", qty: 5, price: 32000, subtotal: 160000 },
+                        { name: "防窺保護貼 15吋", qty: 5, price: 800, subtotal: 4000 }
+                    ],
+                    overallNotes: "急單，請盡快處理轉銷貨。",
+                    rawTotal: 164000, discountRate: 100, discountReason: "", grandTotal: 164000,
+                    createdAt: d2, updatedAt: d2, salesSlipNo: "", shippingDate: null
+                },
+                {
+                    type: "Order", status: "Invoiced", docNo: `OD-${formatYYMMDD(d3Date)}-01`, refQuotationNo: "",
+                    customerId: 'c3', customerCode: "C003", customerName: "鴻海精密 (Foxconn)", salesRepId: 's3', salesRepCode: "S003", salesRep: "林建國 (Ken)", email: "buyer@foxconn.example.com",
+                    invoiceMethod: "三聯式電子發票", deliveryMethod: "黑貓宅急便",
+                    items: [
+                        { name: "企業級無線基地台 WiFi 6", qty: 10, price: 8500, subtotal: 85000 }
+                    ],
+                    overallNotes: "分公司採購",
+                    rawTotal: 85000, discountRate: 90, discountReason: "經銷價", grandTotal: 76500,
+                    createdAt: d3, updatedAt: d3, salesSlipNo: "ERP-SL-2311005", shippingDate: null
+                }
+            ];
+        }
+
+        // ==========================================
+        // 封裝的資料寫入方法 (相容 Cloud/Local)
+        // ==========================================
+        window.saveOrderToDb = async function(payload, existingId = null) {
+            try {
+                if (window.dbStatus === "firebase" && window.db && currentUser) {
+                    const colRef = collection(window.db, 'artifacts', window.appId, 'public', 'data', 'orders');
+                    if (existingId) {
+                        const docRef = doc(colRef, existingId);
+                        payload.updatedAt = new Date().toISOString();
+                        await updateDoc(docRef, payload);
+                    } else {
+                        const newDocRef = doc(colRef);
+                        payload.createdAt = new Date().toISOString();
+                        payload.updatedAt = payload.createdAt;
+                        await setDoc(newDocRef, payload);
+                    }
+                } else {
+                    saveToLocalFallback(payload, existingId);
+                }
+                return true;
+            } catch (err) {
+                console.error("Save Order Error:", err);
+                showCustomMessage("儲存單據失敗，請檢查網路連線", "error");
+                return false;
+            }
+        };
+
+        window.deleteOrderFromDb = async function(id) {
+            try {
+                if (window.dbStatus === "firebase" && window.db && currentUser) {
+                    const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'orders', id);
+                    await deleteDoc(docRef);
+                } else {
+                    deleteFromLocalFallback(id, "orders");
+                }
+                return true;
+            } catch (err) {
+                console.error("Delete Error:", err);
+                return false;
+            }
+        };
+
+        function saveToLocalFallback(payload, existingId = null) {
+            if (existingId) {
+                const idx = window.ordersData.findIndex(x => x.id === existingId);
+                if (idx !== -1) {
+                    window.ordersData[idx] = { ...window.ordersData[idx], ...payload, updatedAt: new Date().toISOString() };
+                }
+            } else {
+                const newItem = { id: `local_o_${Date.now()}`, ...payload, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+                window.ordersData.unshift(newItem);
+            }
+            localStorage.setItem("easyorder_orders", JSON.stringify(window.ordersData));
+            renderOrderList();
+            updateDashboardStats();
+        }
+
+        function deleteFromLocalFallback(id, type) {
+            if (type === "orders") {
+                window.ordersData = window.ordersData.filter(x => x.id !== id);
+                localStorage.setItem("easyorder_orders", JSON.stringify(window.ordersData));
+                renderOrderList();
+                updateDashboardStats();
+            } else {
+                window.basisData[type] = window.basisData[type].filter(x => x.id !== id);
+                localStorage.setItem("easyorder_basis", JSON.stringify(window.basisData));
+                renderDropdownsAndSettings();
+            }
+        }
+
+        // ==========================================
+        // 基礎設定 (Settings) 寫入方法 與 關聯更新
+        // ==========================================
+
+        window.handleAddCustomer = async function(event) {
+            event.preventDefault();
+            const codeEl = document.getElementById('new-customer-code');
+            const nameEl = document.getElementById('new-customer-name');
+            const codeVal = codeEl.value.trim();
+            const nameVal = nameEl.value.trim();
+            if (!nameVal) return;
+
+            if (window.dbStatus === "firebase" && window.db && currentUser) {
+                const colRef = collection(window.db, 'artifacts', window.appId, 'public', 'data', 'customers');
+                const newDocRef = doc(colRef);
+                await setDoc(newDocRef, { code: codeVal, name: nameVal, createdAt: new Date().toISOString() });
+            } else {
+                window.basisData.customers.push({ id: `local_customers_${Date.now()}`, code: codeVal, name: nameVal });
+                localStorage.setItem("easyorder_basis", JSON.stringify(window.basisData));
+                renderDropdownsAndSettings();
+            }
+            codeEl.value = "";
+            nameEl.value = "";
+            showCustomMessage(`已成功新增客戶：${nameVal}`);
+        };
+
+        window.handleAddSalesRep = async function(event) {
+            event.preventDefault();
+            const codeEl = document.getElementById('new-salesrep-code');
+            const nameEl = document.getElementById('new-salesrep-name');
+            const codeVal = codeEl.value.trim();
+            const nameVal = nameEl.value.trim();
+            if (!nameVal) return;
+
+            if (window.dbStatus === "firebase" && window.db && currentUser) {
+                const colRef = collection(window.db, 'artifacts', window.appId, 'public', 'data', 'salesReps');
+                const newDocRef = doc(colRef);
+                await setDoc(newDocRef, { code: codeVal, name: nameVal, createdAt: new Date().toISOString() });
+            } else {
+                window.basisData.salesReps.push({ id: `local_salesReps_${Date.now()}`, code: codeVal, name: nameVal });
+                localStorage.setItem("easyorder_basis", JSON.stringify(window.basisData));
+                renderDropdownsAndSettings();
+            }
+            codeEl.value = "";
+            nameEl.value = "";
+            showCustomMessage(`已成功新增業務人員：${nameVal}`);
+        };
+
+        window.handleAddBasisData = async function(event, collectionName, inputId) {
+            event.preventDefault();
+            const inputEl = document.getElementById(inputId);
+            const val = inputEl.value.trim();
+            if (!val) return;
+
+            if (window.dbStatus === "firebase" && window.db && currentUser) {
+                const colRef = collection(window.db, 'artifacts', window.appId, 'public', 'data', collectionName);
+                const newDocRef = doc(colRef);
+                await setDoc(newDocRef, { name: val, createdAt: new Date().toISOString() });
+            } else {
+                window.basisData[collectionName].push({ id: `local_${collectionName}_${Date.now()}`, name: val });
+                localStorage.setItem("easyorder_basis", JSON.stringify(window.basisData));
+                renderDropdownsAndSettings();
+            }
+            inputEl.value = "";
+            showCustomMessage(`已成功新增項目：${val}`);
+        };
+
+        window.deleteBasisData = function(collectionName, id) {
+            window.showConfirm(
+                "刪除基礎設定",
+                "確定要刪除此項目嗎？\n(注意：這不會影響已經建立的歷史單據，但將斷開關聯。)",
+                async () => {
+                    if (window.dbStatus === "firebase" && window.db && currentUser) {
+                        const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', collectionName, id);
+                        await deleteDoc(docRef);
+                    } else {
+                        deleteFromLocalFallback(id, collectionName);
+                    }
+                },
+                "danger"
+            );
+        };
+
+        window.openEditBasisModal = function(collectionName, id, currentVal, extraCode = '') {
+            document.getElementById("edit-basis-col").value = collectionName;
+            document.getElementById("edit-basis-id").value = id;
+            document.getElementById("edit-basis-old-val").value = currentVal;
+            
+            let colNameZh = '';
+            if (collectionName === 'customers' || collectionName === 'salesReps') {
+                colNameZh = collectionName === 'customers' ? '客戶資料' : '業務人員資料';
+                document.getElementById('edit-basis-code-container').classList.remove('hidden');
+                document.getElementById('edit-basis-code').value = extraCode;
+                document.getElementById('edit-basis-code-label').innerText = collectionName === 'customers' ? '客戶編號 (選填)' : '業務編號 (選填)';
+                document.getElementById('edit-basis-name-label').innerText = collectionName === 'customers' ? '客戶名稱' : '業務姓名';
+            } else {
+                document.getElementById('edit-basis-code-container').classList.add('hidden');
+                document.getElementById('edit-basis-name-label').innerText = '名稱值';
+                if (collectionName === 'invoiceMethods') colNameZh = '發票開立方式';
+                else if (collectionName === 'deliveryMethods') colNameZh = '出貨管道名稱';
+            }
+
+            document.getElementById("edit-basis-title").innerText = `編輯 ${colNameZh}`;
+            document.getElementById("edit-basis-input").value = currentVal;
+            openModal('edit-basis-modal');
+        }
+
+        window.submitEditBasis = async function(event) {
+            event.preventDefault();
+            const col = document.getElementById("edit-basis-col").value;
+            const id = document.getElementById("edit-basis-id").value;
+            const oldVal = document.getElementById("edit-basis-old-val").value;
+            const newVal = document.getElementById("edit-basis-input").value.trim();
+            const newCode = document.getElementById("edit-basis-code").value.trim();
+            if (!newVal) return;
+
+            let updatePayload = { name: newVal || "" };
+            if (col === 'customers' || col === 'salesReps') {
+                updatePayload.code = newCode || "";
+            }
+
+            if (window.dbStatus === "firebase" && window.db && currentUser) {
+                const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', col, id);
+                await updateDoc(docRef, updatePayload);
+            } else {
+                const idx = window.basisData[col].findIndex(x => x.id === id);
+                if (idx !== -1) {
+                    window.basisData[col][idx].name = newVal;
+                    if (col === 'customers' || col === 'salesReps') window.basisData[col][idx].code = newCode;
+                    localStorage.setItem("easyorder_basis", JSON.stringify(window.basisData));
+                    renderDropdownsAndSettings();
+                }
+            }
+
+            // 執行關聯更新 (Cascade Update)：當修改客戶與業務時，將同步覆寫所有包含該資料的歷史單據
+            if (col === 'customers' || col === 'salesReps') {
+                window.ordersData.forEach(async (o) => {
+                    let shouldUpdateOrder = false;
+                    
+                    if (col === 'customers' && (o.customerId === id || o.customerName === oldVal)) {
+                        o.customerId = id;
+                        o.customerName = newVal;
+                        o.customerCode = newCode;
+                        shouldUpdateOrder = true;
+                    }
+                    if (col === 'salesReps' && (o.salesRepId === id || o.salesRep === oldVal)) {
+                        o.salesRepId = id;
+                        o.salesRep = newVal;
+                        o.salesRepCode = newCode;
+                        shouldUpdateOrder = true;
+                    }
+                    
+                    if (shouldUpdateOrder) {
+                        if (window.dbStatus === "firebase" && window.db && currentUser) {
+                            try {
+                                const orderDocRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'orders', o.id);
+                                await updateDoc(orderDocRef, {
+                                    customerId: o.customerId || "",
+                                    customerName: o.customerName || "",
+                                    customerCode: o.customerCode || "",
+                                    salesRepId: o.salesRepId || "",
+                                    salesRep: o.salesRep || "",
+                                    salesRepCode: o.salesRepCode || ""
+                                });
+                            } catch(e) { console.error("Cascade update error:", e); }
+                        }
+                    }
+                });
+                if (window.dbStatus === "local") {
+                    localStorage.setItem("easyorder_orders", JSON.stringify(window.ordersData));
+                }
+                renderOrderList();
+            }
+
+            closeModal('edit-basis-modal');
+            showCustomMessage(`修改成功，且所有相關單據已連動更新！`);
+        }
+
+        // ==========================================
+        // 一鍵複製/範本承接功能：以此單據為藍本建立新單
+        // ==========================================
+        window.duplicateOrder = function(orderId) {
+            const rawOrder = window.ordersData.find(x => x.id === orderId);
+            if (!rawOrder) return;
+            
+            const order = window.resolveOrderData(rawOrder);
+            
+            // 複製成全新單據，因此不帶入既有 editingOrderId 與 clonedFromDocNo
+            window.editingOrderId = null;
+            window.clonedFromDocNo = order.docNo;
+            window.originView = 'admin'; 
+            
+            // 配置修改中提示元件
+            const indicator = document.getElementById("editing-indicator");
+            const iconBox = document.getElementById("editing-icon-box");
+            const icon = document.getElementById("editing-icon");
+            const title = document.getElementById("editing-title");
+            const subtitle = document.getElementById("editing-subtitle");
+            
+            indicator.className = "bg-sky-50 border-sky-200 rounded-xl p-4 flex items-center justify-between mb-4 animate-in fade-in border";
+            iconBox.className = "w-10 h-10 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center text-lg";
+            icon.className = "fa-solid fa-copy";
+            title.className = "font-bold text-sky-800 text-sm";
+            title.innerText = "已複製前次單據交易內容";
+            subtitle.className = "text-xs text-sky-600 mt-0.5";
+            subtitle.innerHTML = `您正在基於單號 <span class="font-bold underline decoration-sky-300 underline-offset-2">${order.docNo}</span> 建立全新的單據。送出後將產生全新編號，不影響原單。`;
+            indicator.classList.remove("hidden");
+
+            // 回填基礎客戶資訊
+            const customerSelect = document.getElementById("customerName");
+            let customerFound = Array.from(customerSelect.options).find(opt => order.customerId ? opt.value === order.customerId : opt.dataset.name === order.customerName);
+            
+            if (customerFound) {
+                customerSelect.value = customerFound.value;
+                document.getElementById("manual-customer-container").classList.add("hidden");
+                document.getElementById("manualCustomerName").removeAttribute("required");
+            } else {
+                customerSelect.value = "__MANUAL__";
+                document.getElementById("manual-customer-container").classList.remove("hidden");
+                document.getElementById("manualCustomerCode").value = order.customerCode || "";
+                document.getElementById("manualCustomerName").value = order.customerName || "";
+                document.getElementById("manualCustomerName").setAttribute("required", "true");
+            }
+
+            const repSelect = document.getElementById("salesRep");
+            let repFound = Array.from(repSelect.options).find(opt => order.salesRepId ? opt.value === order.salesRepId : (opt.dataset.name && opt.dataset.name === order.salesRep));
+            if (repFound) {
+                repSelect.value = repFound.value;
+            } else {
+                let repFoundByName = Array.from(repSelect.options).find(opt => opt.dataset.name === order.salesRep);
+                if (repFoundByName) repSelect.value = repFoundByName.value;
+            }
+
+            document.getElementById("email").value = order.email || "";
+            document.getElementById("invoiceMethod").value = order.invoiceMethod || "";
+            document.getElementById("deliveryMethod").value = order.deliveryMethod || "";
+            document.getElementById("overallNotes").value = order.overallNotes || "";
+            document.getElementById("discountRate").value = order.discountRate || 100;
+            document.getElementById("discountReason").value = order.discountReason || "";
+            
+            // 特殊折讓欄位狀態
+            const reasonContainer = document.getElementById("discount-reason-container");
+            const reasonInput = document.getElementById("discountReason");
+            if (order.discountRate < 100) {
+                reasonContainer.classList.remove("hidden");
+                reasonInput.setAttribute("required", "true");
+            } else {
+                reasonContainer.classList.add("hidden");
+                reasonInput.removeAttribute("required");
+            }
+
+            // 深拷貝商品明細，並確保末行自動延展
+            window.orderItems = JSON.parse(JSON.stringify(order.items || []));
+            if (window.orderItems.length === 0) {
+                window.orderItems.push({ name: "", qty: "", price: "", subtotal: 0 });
+            } else {
+                const lastItem = window.orderItems[window.orderItems.length - 1];
+                if (lastItem.name.trim() !== "") {
+                    window.orderItems.push({ name: "", qty: "", price: "", subtotal: 0 });
+                }
+            }
+            rebuildAllRows(); 
+            calculateGrandTotals();
+            
+            document.getElementById("btn-quote-text").innerText = "另存為新報價單";
+            document.getElementById("btn-order-text").innerText = "確認送出 (成立全新訂購單)";
+
+            switchMode('customer');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            showCustomMessage("📋 已複製前次單據內容！您可以修改後作為新單送出。");
+        }
+
+        // ==========================================
+        // 業務編輯未轉訂單的報價單 (Quotation Editing View Loader)
+        // ==========================================
+        window.loadQuotationForEdit = function(orderId) {
+            const rawOrder = window.ordersData.find(x => x.id === orderId);
+            if (!rawOrder || rawOrder.type !== 'Quotation') return;
+            
+            const order = window.resolveOrderData(rawOrder);
+            window.editingOrderId = orderId;
+            window.clonedFromDocNo = null;
+            window.originView = 'admin'; 
+            
+            const indicator = document.getElementById("editing-indicator");
+            const iconBox = document.getElementById("editing-icon-box");
+            const icon = document.getElementById("editing-icon");
+            const title = document.getElementById("editing-title");
+            const subtitle = document.getElementById("editing-subtitle");
+            
+            indicator.className = "bg-amber-50 border-amber-200 rounded-xl p-4 flex items-center justify-between mb-4 animate-in fade-in border";
+            iconBox.className = "w-10 h-10 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-lg";
+            icon.className = "fa-solid fa-pen-to-square";
+            title.className = "font-bold text-amber-800 text-sm";
+            title.innerText = "目前正在編輯報價單";
+            subtitle.className = "text-xs text-amber-600 mt-0.5";
+            subtitle.innerHTML = `您正在修改既有的報價單號：<span class="font-bold underline decoration-amber-300 underline-offset-2">${order.docNo}</span>`;
+            indicator.classList.remove("hidden");
+
+            const customerSelect = document.getElementById("customerName");
+            let customerFound = Array.from(customerSelect.options).find(opt => order.customerId ? opt.value === order.customerId : opt.dataset.name === order.customerName);
+            
+            if (customerFound) {
+                customerSelect.value = customerFound.value;
+                document.getElementById("manual-customer-container").classList.add("hidden");
+                document.getElementById("manualCustomerName").removeAttribute("required");
+            } else {
+                customerSelect.value = "__MANUAL__";
+                document.getElementById("manual-customer-container").classList.remove("hidden");
+                document.getElementById("manualCustomerCode").value = order.customerCode || "";
+                document.getElementById("manualCustomerName").value = order.customerName || "";
+                document.getElementById("manualCustomerName").setAttribute("required", "true");
+            }
+
+            const repSelect = document.getElementById("salesRep");
+            let repFound = Array.from(repSelect.options).find(opt => order.salesRepId ? opt.value === order.salesRepId : (opt.dataset.name && opt.dataset.name === order.salesRep));
+            if (repFound) {
+                repSelect.value = repFound.value;
+            } else {
+                let repFoundByName = Array.from(repSelect.options).find(opt => opt.dataset.name === order.salesRep);
+                if (repFoundByName) {
+                    repSelect.value = repFoundByName.value;
+                }
+            }
+
+            document.getElementById("email").value = order.email || "";
+            document.getElementById("invoiceMethod").value = order.invoiceMethod || "";
+            document.getElementById("deliveryMethod").value = order.deliveryMethod || "";
+            document.getElementById("overallNotes").value = order.overallNotes || "";
+            document.getElementById("discountRate").value = order.discountRate || 100;
+            document.getElementById("discountReason").value = order.discountReason || "";
+            
+            // 使用 hidden 切換
+            const reasonContainer = document.getElementById("discount-reason-container");
+            const reasonInput = document.getElementById("discountReason");
+            if (order.discountRate < 100) {
+                reasonContainer.classList.remove("hidden");
+                reasonInput.setAttribute("required", "true");
+            } else {
+                reasonContainer.classList.add("hidden");
+                reasonInput.removeAttribute("required");
+            }
+
+            window.orderItems = JSON.parse(JSON.stringify(order.items || []));
+            rebuildAllRows(); 
+            calculateGrandTotals();
+            
+            document.getElementById("btn-quote-text").innerText = "確認儲存修改 (報價單)";
+            document.getElementById("btn-order-text").innerText = "確認修改並轉正式訂購單";
+
+            switchMode('customer');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        window.cancelEditing = function() {
+            const targetView = window.originView || 'customer'; 
+            resetForm(); 
+            if (typeof window.switchMode === 'function') {
+                window.switchMode(targetView); 
+            }
+        }
+
+        // ==========================================
+        // UI / 交互邏輯
+        // ==========================================
+        function switchMode(mode) {
+            document.getElementById('customer-view').classList.add('hidden');
+            document.getElementById('admin-view').classList.add('hidden');
+            document.getElementById('settings-view').classList.add('hidden');
+            document.getElementById(`${mode}-view`).classList.remove('hidden');
+
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`tab-${mode}`).classList.add('active');
+
+            if (mode === 'admin') {
+                renderOrderList();
+            }
+        }
+
+        function setFormPreviewMode(mode) {
+            window.formPreviewMode = mode;
+            const deskBtn = document.getElementById('preview-desktop-btn');
+            const mobBtn = document.getElementById('preview-mobile-btn');
+            
+            if (mode === 'desktop') {
+                document.getElementById('desktop-items-container').classList.remove('hidden');
+                document.getElementById('mobile-items-container').classList.add('hidden');
+                
+                deskBtn.className = "px-3 py-1.5 text-xs font-bold rounded-lg bg-white shadow-sm text-indigo-600 transition-colors cursor-pointer";
+                mobBtn.className = "px-3 py-1.5 text-xs font-bold rounded-lg text-slate-500 hover:text-slate-700 transition-colors cursor-pointer";
+            } else {
+                document.getElementById('desktop-items-container').classList.add('hidden');
+                document.getElementById('mobile-items-container').classList.remove('hidden');
+                
+                mobBtn.className = "px-3 py-1.5 text-xs font-bold rounded-lg bg-white shadow-sm text-indigo-600 transition-colors cursor-pointer";
+                deskBtn.className = "px-3 py-1.5 text-xs font-bold rounded-lg text-slate-500 hover:text-slate-700 transition-colors cursor-pointer";
+            }
+            rebuildAllRows();
+        }
+
+        window.orderItems = [];
+        let internalSubmitType = "Quotation"; 
+
+        function initItemsForm() {
+            window.orderItems = [];
+            addNewOrderItemRow();
+
+            const discountInput = document.getElementById("discountRate");
+            const reasonContainer = document.getElementById("discount-reason-container");
+            const reasonInput = document.getElementById("discountReason");
+
+            // 確保一開始是隱藏的
+            reasonContainer.classList.add("hidden");
+
+            discountInput.addEventListener("input", function() {
+                let val = parseInt(this.value);
+                if (isNaN(val) || val < 1) val = 1;
+                if (val > 100) val = 100;
+                this.value = val;
+
+                // 改用穩定的 hidden 類別切換
+                if (val < 100) {
+                    reasonContainer.classList.remove("hidden");
+                    reasonInput.setAttribute("required", "true");
+                } else {
+                    reasonContainer.classList.add("hidden");
+                    reasonInput.removeAttribute("required");
+                    reasonInput.value = "";
+                }
+                calculateGrandTotals();
+            });
+
+            document.getElementById("autoFillPrevious").addEventListener("change", function() {
+                if (this.checked) {
+                    const cusSelect = document.getElementById("customerName");
+                    if (cusSelect.value && cusSelect.value !== "__MANUAL__") {
+                        window.applyPreviousOrderData(cusSelect.value);
+                    }
+                }
+            });
+
+            document.getElementById("customerName").addEventListener("change", function() {
+                const manualContainer = document.getElementById("manual-customer-container");
+                const manualNameInput = document.getElementById("manualCustomerName");
+                if (this.value === "__MANUAL__") {
+                    manualContainer.classList.remove("hidden");
+                    manualNameInput.setAttribute("required", "true");
+                    manualNameInput.focus();
+                } else {
+                    manualContainer.classList.add("hidden");
+                    manualNameInput.removeAttribute("required");
+                    manualNameInput.value = "";
+                    document.getElementById("manualCustomerCode").value = "";
+
+                    // 若勾選項已打勾，則自動帶入該客戶上一次歷史交易紀錄
+                    const customerId = this.value;
+                    const autoFillChecked = document.getElementById("autoFillPrevious").checked;
+                    if (customerId && autoFillChecked) {
+                        window.applyPreviousOrderData(customerId);
+                    }
+                }
+            });
+
+            document.getElementById("order-form").addEventListener("submit", handleFormSubmit);
+        }
+
+        window.applyPreviousOrderData = function(customerId) {
+            const customerOrders = (window.ordersData || []).filter(o => o.customerId === customerId);
+            if (customerOrders.length > 0) {
+                // 依日期排序（新到舊）
+                customerOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                const lastOrder = customerOrders[0];
+                
+                // 1. 自動匹配負責業務
+                const repSelect = document.getElementById("salesRep");
+                if (lastOrder.salesRepId && Array.from(repSelect.options).some(o => o.value === lastOrder.salesRepId)) {
+                    repSelect.value = lastOrder.salesRepId;
+                }
+                
+                // 2. 帶入聯絡信箱
+                if (lastOrder.email) {
+                    document.getElementById("email").value = lastOrder.email;
+                }
+                
+                // 3. 帶入發票開立方式
+                const invSelect = document.getElementById("invoiceMethod");
+                if (lastOrder.invoiceMethod && Array.from(invSelect.options).some(o => o.value === lastOrder.invoiceMethod)) {
+                    invSelect.value = lastOrder.invoiceMethod;
+                }
+                
+                // 4. 帶入出貨管道 / 方式
+                const delSelect = document.getElementById("deliveryMethod");
+                if (lastOrder.deliveryMethod && Array.from(delSelect.options).some(o => o.value === lastOrder.deliveryMethod)) {
+                    delSelect.value = lastOrder.deliveryMethod;
+                }
+                
+                showCustomMessage(`💡 已為您自動帶入該客戶前次交易條件（業務、發票、配送管道等）！`);
+            }
+        };
+
+        function addNewOrderItemRow(name = "", qty = "", price = "") {
+            window.orderItems.push({ name, qty, price, subtotal: 0 });
+            rebuildAllRows();
+        }
+
+        function deleteItemRow(index) {
+            window.orderItems.splice(index, 1);
+            if (window.orderItems.length === 0) {
+                addNewOrderItemRow(); 
+            } else {
+                rebuildAllRows();
+                calculateGrandTotals();
+            }
+        }
+
+        function syncField(index, field, value) {
+            window.orderItems[index][field] = value;
+            
+            if (field === 'qty' || field === 'price') {
+                updateSingleSubtotal(index);
+            }
+            
+            if (field === 'name' && value.trim() !== "" && index === window.orderItems.length - 1) {
+                addNewOrderItemRow();
+            }
+        }
+
+        function updateSingleSubtotal(index) {
+            const item = window.orderItems[index];
+            const q = parseFloat(item.qty) || 0;
+            const p = parseFloat(item.price) || 0;
+            item.subtotal = q * p;
+            
+            const deskSub = document.getElementById(`subtotal-desk-${index}`);
+            if (deskSub) deskSub.innerText = item.subtotal > 0 ? `$${item.subtotal.toLocaleString()}` : "-";
+            
+            const mobSub = document.getElementById(`subtotal-mob-${index}`);
+            if (mobSub) mobSub.innerText = item.subtotal > 0 ? `$${item.subtotal.toLocaleString()}` : "$0";
+
+            calculateGrandTotals();
+        }
+
+        function calculateGrandTotals() {
+            let rawTotal = 0;
+            window.orderItems.forEach(item => {
+                if(item.name.trim() !== "") {
+                    rawTotal += item.subtotal;
+                }
+            });
+
+            document.getElementById("display-raw-total").innerText = rawTotal.toLocaleString();
+
+            const rate = parseInt(document.getElementById("discountRate").value) || 100;
+            const grandTotal = Math.round(rawTotal * (rate / 100));
+
+            const gtDisplay = document.getElementById("display-grand-total");
+            gtDisplay.style.opacity = '0.5';
+            setTimeout(() => {
+                gtDisplay.innerText = grandTotal.toLocaleString();
+                gtDisplay.style.opacity = '1';
+            }, 150);
+        }
+
+        function rebuildAllRows() {
+            const deskTbody = document.getElementById("desktop-items-tbody");
+            const mobList = document.getElementById("mobile-items-list");
+            
+            deskTbody.innerHTML = "";
+            mobList.innerHTML = "";
+
+            window.orderItems.forEach((item, index) => {
+                const isLast = index === window.orderItems.length - 1;
+                
+                const tr = document.createElement("tr");
+                tr.className = isLast ? "bg-indigo-50/20" : "hover:bg-slate-50 transition-colors";
+                tr.innerHTML = `
+                    <td class="py-2 px-4 text-center text-slate-400 text-xs font-mono">${index + 1}</td>
+                    <td class="py-2 px-4">
+                        <input type="text" value="${item.name}" oninput="syncField(${index}, 'name', this.value)" placeholder="${isLast ? '輸入新商品名稱...' : '商品描述'}" class="w-full rounded-lg border-transparent hover:border-slate-300 focus:border-indigo-500/50 px-3 py-1.5 text-sm bg-transparent transition-all" ${isLast && index===0 ? 'required' : ''}>
+                    </td>
+                    <td class="py-2 px-4">
+                        <input type="number" min="1" value="${item.qty}" oninput="syncField(${index}, 'qty', this.value)" placeholder="1" class="w-full rounded-lg border-transparent hover:border-slate-300 focus:border-indigo-500/50 px-3 py-1.5 text-sm bg-transparent text-right transition-all font-mono">
+                    </td>
+                    <td class="py-2 px-4">
+                        <input type="number" min="0" value="${item.price}" oninput="syncField(${index}, 'price', this.value)" placeholder="0" class="w-full rounded-lg border-transparent hover:border-slate-300 focus:border-indigo-500/50 px-3 py-1.5 text-sm bg-transparent text-right transition-all font-mono">
+                    </td>
+                    <td class="py-2 px-4 text-right text-sm font-bold text-slate-700" id="subtotal-desk-${index}">
+                        ${item.subtotal > 0 ? '$'+item.subtotal.toLocaleString() : '-'}
+                    </td>
+                    <td class="py-2 px-4 text-center">
+                        ${!isLast || window.orderItems.length > 1 ? `<button type="button" onclick="deleteItemRow(${index})" class="w-8 h-8 rounded-full text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors flex items-center justify-center cursor-pointer"><i class="fa-solid fa-trash-can"></i></button>` : ''}
+                    </td>
+                `;
+                deskTbody.appendChild(tr);
+
+                const card = document.createElement("div");
+                card.className = "bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative";
+                if(isLast) card.classList.add("border-indigo-300", "shadow-indigo-100");
+                card.innerHTML = `
+                    ${(!isLast || window.orderItems.length > 1) ? `<button type="button" onclick="deleteItemRow(${index})" class="absolute top-2 right-2 w-8 h-8 rounded-full text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors flex items-center justify-center cursor-pointer"><i class="fa-solid fa-xmark"></i></button>` : ''}
+                    <div class="mb-3">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">品項名稱 #${index + 1}</label>
+                        <input type="text" value="${item.name}" oninput="syncField(${index}, 'name', this.value)" placeholder="輸入商品描述..." class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50" ${isLast && index===0 ? 'required' : ''}>
+                    </div>
+                    <div class="flex gap-3">
+                        <div class="w-1/3">
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">數量</label>
+                            <input type="number" min="1" value="${item.qty}" oninput="syncField(${index}, 'qty', this.value)" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-center focus:outline-none focus:ring-2 focus:ring-indigo-500/50 font-mono">
+                        </div>
+                        <div class="w-2/3">
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">單價 (未稅)</label>
+                            <input type="number" min="0" value="${item.price}" oninput="syncField(${index}, 'price', this.value)" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-right focus:outline-none focus:ring-2 focus:ring-indigo-500/50 font-mono">
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-slate-100 flex justify-between items-center">
+                        <span class="text-xs text-slate-500 font-bold">小計</span>
+                        <span class="text-indigo-600 font-bold font-mono" id="subtotal-mob-${index}">${item.subtotal > 0 ? '$'+item.subtotal.toLocaleString() : '$0'}</span>
+                    </div>
+                `;
+                mobList.appendChild(card);
+            });
+        }
+
+        function renderDropdownsAndSettings() {
+            // 備份當前已被選取的表單值以防止異步更新覆寫
+            const curCustomer = document.getElementById("customerName").value;
+            const curSalesRep = document.getElementById("salesRep").value;
+            const curInvoice = document.getElementById("invoiceMethod").value;
+            const curDelivery = document.getElementById("deliveryMethod").value;
+
+            // 客戶
+            const cusSelect = document.getElementById("customerName");
+            cusSelect.innerHTML = `
+                <option value="" disabled selected>請選擇現有客戶 (或選擇手動輸入新客戶)</option>
+                <option value="__MANUAL__" class="font-bold text-indigo-600">➕ 手動輸入新客戶...</option>
+            `;
+            const setCusList = document.getElementById("settings-customers-list");
+            setCusList.innerHTML = "";
+            window.basisData.customers.forEach(c => {
+                const label = c.code ? `[${c.code}] ${c.name}` : c.name;
+                cusSelect.innerHTML += `<option value="${c.id}" data-code="${c.code || ''}" data-name="${c.name}">${label}</option>`;
+                
+                const displayCode = c.code ? `<span class="text-[10px] font-mono bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded mr-1.5 border border-slate-200">${c.code}</span>` : '';
+                setCusList.innerHTML += `
+                    <li class="flex justify-between items-center py-2 px-3 bg-white border border-slate-100 rounded-lg shadow-sm">
+                        <div class="flex items-center">${displayCode}<span class="text-sm font-medium text-slate-700">${c.name}</span></div>
+                        <div class="flex">
+                            <button onclick="window.openEditBasisModal('customers', '${c.id}', '${c.name}', '${c.code || ''}')" class="text-slate-400 hover:text-amber-500 w-8 h-8 rounded-full hover:bg-slate-50 cursor-pointer"><i class="fa-solid fa-pen text-xs"></i></button>
+                            <button onclick="window.deleteBasisData('customers', '${c.id}')" class="text-slate-400 hover:text-rose-500 w-8 h-8 rounded-full hover:bg-slate-50 cursor-pointer"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                        </div>
+                    </li>
+                `;
+            });
+
+            // 業務
+            const repSelect = document.getElementById("salesRep");
+            repSelect.innerHTML = `<option value="" disabled selected>請選擇業務人員</option>`;
+            const setRepList = document.getElementById("settings-salesreps-list");
+            setRepList.innerHTML = "";
+            window.basisData.salesReps.forEach(s => {
+                const label = s.code ? `[${s.code}] ${s.name}` : s.name;
+                repSelect.innerHTML += `<option value="${s.id}" data-code="${s.code || ''}" data-name="${s.name}">${label}</option>`;
+                
+                const displayCode = s.code ? `<span class="text-[10px] font-mono bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded mr-1.5 border border-slate-200">${s.code}</span>` : '';
+                setRepList.innerHTML += `
+                    <li class="flex justify-between items-center py-2 px-3 bg-white border border-slate-100 rounded-lg shadow-sm">
+                        <div class="flex items-center">${displayCode}<span class="text-sm font-medium text-slate-700">${s.name}</span></div>
+                        <div class="flex">
+                            <button onclick="window.openEditBasisModal('salesReps', '${s.id}', '${s.name}', '${s.code || ''}')" class="text-slate-400 hover:text-amber-500 w-8 h-8 rounded-full hover:bg-slate-50 cursor-pointer"><i class="fa-solid fa-pen text-xs"></i></button>
+                            <button onclick="window.deleteBasisData('salesReps', '${s.id}')" class="text-slate-400 hover:text-rose-500 w-8 h-8 rounded-full hover:bg-slate-50 cursor-pointer"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                        </div>
+                    </li>
+                `;
+            });
+
+            // 發票方式
+            const invSelect = document.getElementById("invoiceMethod");
+            invSelect.innerHTML = `<option value="" disabled selected>請選擇</option>`;
+            const setInvList = document.getElementById("settings-invoicemethods-list");
+            setInvList.innerHTML = "";
+            window.basisData.invoiceMethods.forEach(i => {
+                invSelect.innerHTML += `<option value="${i.name}">${i.name}</option>`;
+                setInvList.innerHTML += `
+                    <li class="flex justify-between items-center py-2 px-3 bg-white border border-slate-100 rounded-lg shadow-sm">
+                        <span class="text-sm font-medium text-slate-700">${i.name}</span>
+                        <div class="flex">
+                            <button onclick="window.openEditBasisModal('invoiceMethods', '${i.id}', '${i.name}')" class="text-slate-400 hover:text-amber-500 w-8 h-8 rounded-full hover:bg-slate-50 cursor-pointer"><i class="fa-solid fa-pen text-xs"></i></button>
+                            <button onclick="window.deleteBasisData('invoiceMethods', '${i.id}')" class="text-slate-400 hover:text-rose-500 w-8 h-8 rounded-full hover:bg-slate-50 cursor-pointer"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                        </div>
+                    </li>
+                `;
+            });
+
+            // 出貨方式
+            const delSelect = document.getElementById("deliveryMethod");
+            delSelect.innerHTML = `<option value="" disabled selected>請選擇</option>`;
+            const setDelList = document.getElementById("settings-deliverymethods-list");
+            setDelList.innerHTML = "";
+            window.basisData.deliveryMethods.forEach(d => {
+                delSelect.innerHTML += `<option value="${d.name}">${d.name}</option>`;
+                setDelList.innerHTML += `
+                    <li class="flex justify-between items-center py-2 px-3 bg-white border border-slate-100 rounded-lg shadow-sm">
+                        <span class="text-sm font-medium text-slate-700">${d.name}</span>
+                        <div class="flex">
+                            <button onclick="window.openEditBasisModal('deliveryMethods', '${d.id}', '${d.name}')" class="text-slate-400 hover:text-amber-500 w-8 h-8 rounded-full hover:bg-slate-50 cursor-pointer"><i class="fa-solid fa-pen text-xs"></i></button>
+                            <button onclick="window.deleteBasisData('deliveryMethods', '${d.id}')" class="text-slate-400 hover:text-rose-500 w-8 h-8 rounded-full hover:bg-slate-50 cursor-pointer"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                        </div>
+                    </li>
+                `;
+            });
+
+            // 還原先前的選取值，或者是自動綁定正在修改中的單據值
+            if (curCustomer && Array.from(cusSelect.options).some(o => o.value === curCustomer)) {
+                cusSelect.value = curCustomer;
+            } else if (window.editingOrderId) {
+                const activeOrder = window.ordersData.find(x => x.id === window.editingOrderId);
+                if (activeOrder && activeOrder.customerId) cusSelect.value = activeOrder.customerId;
+            }
+
+            if (curSalesRep && Array.from(repSelect.options).some(o => o.value === curSalesRep)) {
+                repSelect.value = curSalesRep;
+            } else if (window.editingOrderId) {
+                const activeOrder = window.ordersData.find(x => x.id === window.editingOrderId);
+                if (activeOrder && activeOrder.salesRepId) repSelect.value = activeOrder.salesRepId;
+            }
+
+            if (curInvoice && Array.from(invSelect.options).some(o => o.value === curInvoice)) {
+                invSelect.value = curInvoice;
+            } else if (window.editingOrderId) {
+                const activeOrder = window.ordersData.find(x => x.id === window.editingOrderId);
+                if (activeOrder && activeOrder.invoiceMethod) invSelect.value = activeOrder.invoiceMethod;
+            }
+
+            if (curDelivery && Array.from(delSelect.options).some(o => o.value === curDelivery)) {
+                delSelect.value = curDelivery;
+            } else if (window.editingOrderId) {
+                const activeOrder = window.ordersData.find(x => x.id === window.editingOrderId);
+                if (activeOrder && activeOrder.deliveryMethod) delSelect.value = activeOrder.deliveryMethod;
+            }
+        }
+
+        // ==========================================
+        // 智慧單號自動生成 (保證唯一、每日 01 流水號開始)
+        // ==========================================
+        window.generateDocNumber = function(type) {
+            const now = new Date();
+            const yy = String(now.getFullYear()).slice(-2);
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const kVal = type === "Quotation" ? "QT-" : "OD-";
+            const prefix = `${kVal}${yy}${mm}${dd}-`;
+
+            let maxSuffix = 0;
+            
+            (window.ordersData || []).forEach(o => {
+                // 1. 檢查主單號 (docNo)
+                if (o.docNo && o.docNo.startsWith(prefix)) {
+                    const suffixStr = o.docNo.slice(prefix.length);
+                    const suffix = parseInt(suffixStr, 10);
+                    if (!isNaN(suffix) && suffix > maxSuffix) {
+                        maxSuffix = suffix;
+                    }
+                }
+                
+                // 2. 檢查來源報價單號 (refQuotationNo)
+                // 避免報價單轉訂單後 (主單號變成 OD)，原本的 QT 單號被系統誤認為未被使用而重複配發，導致退回時衝突
+                if (o.refQuotationNo && o.refQuotationNo.startsWith(prefix)) {
+                    const suffixStr = o.refQuotationNo.slice(prefix.length);
+                    const suffix = parseInt(suffixStr, 10);
+                    if (!isNaN(suffix) && suffix > maxSuffix) {
+                        maxSuffix = suffix;
+                    }
+                }
+            });
+
+            const nextSuffix = maxSuffix + 1;
+            return `${prefix}${String(nextSuffix).padStart(2, '0')}`;
+        };
+
+        function setSubmitTypeAndSubmit(type) {
+            internalSubmitType = type;
+            document.getElementById("hidden-submit-btn").click(); 
+        }
+
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+
+            const validItems = window.orderItems.filter(i => i.name.trim() !== "");
+            if (validItems.length === 0) {
+                showCustomMessage("請至少輸入一項商品明細！", "error");
+                return;
+            }
+
+            for (let i = 0; i < validItems.length; i++) {
+                if (!validItems[i].qty || !validItems[i].price) {
+                    showCustomMessage(`品項「${validItems[i].name}」的數量與單價必須填寫且大於0！`, "error");
+                    return;
+                }
+            }
+
+            const submitType = internalSubmitType;
+            let docNo = window.generateDocNumber(submitType);
+            let refQuotationNo = "";
+
+            if (window.editingOrderId) {
+                const original = window.ordersData.find(x => x.id === window.editingOrderId);
+                docNo = original ? (original.docNo || "") : ""; 
+                refQuotationNo = original ? (original.refQuotationNo || "") : "";
+                
+                if (original && original.type === "Quotation" && submitType === "Order") {
+                    docNo = window.generateDocNumber("Order");
+                    refQuotationNo = original.docNo || ""; 
+                }
+            } else if (window.clonedFromDocNo) {
+                // 如果是複製單據，則依照送出類型重新生成一筆全新的單號，並關聯前單（若原單為報價單且轉成訂單）
+                docNo = window.generateDocNumber(submitType);
+                if (window.clonedFromDocNo.startsWith("QT-") && submitType === "Order") {
+                    refQuotationNo = window.clonedFromDocNo;
+                }
+            }
+
+            // 判斷客戶編號與名稱，並儲存關聯 ID
+            let finalCustomerCode = "";
+            let finalCustomerName = "";
+            let customerId = null;
+            const cusSelect = document.getElementById("customerName");
+            if (cusSelect.value === "__MANUAL__") {
+                finalCustomerCode = document.getElementById("manualCustomerCode").value.trim();
+                finalCustomerName = document.getElementById("manualCustomerName").value.trim();
+                
+                if (!finalCustomerName) {
+                    showCustomMessage("請填寫手動輸入的新客戶名稱！", "error");
+                    return;
+                }
+
+                // 自動寫入客戶名單基礎數據表 (防重機制)
+                const existingCustomer = window.basisData.customers.find(x => x.name.trim() === finalCustomerName);
+                if (existingCustomer) {
+                    customerId = existingCustomer.id;
+                    finalCustomerCode = existingCustomer.code || finalCustomerCode; 
+                } else {
+                    if (window.dbStatus === "firebase" && window.db && currentUser) {
+                        try {
+                            const colRef = collection(window.db, 'artifacts', window.appId, 'public', 'data', 'customers');
+                            const newDocRef = doc(colRef);
+                            await setDoc(newDocRef, { 
+                                code: finalCustomerCode || "", 
+                                name: finalCustomerName || "", 
+                                createdAt: new Date().toISOString() 
+                            });
+                            customerId = newDocRef.id;
+                        } catch (err) {
+                            console.error("Auto save firestore customer error:", err);
+                        }
+                    } else {
+                        customerId = `local_customers_${Date.now()}`;
+                        window.basisData.customers.push({ 
+                            id: customerId, 
+                            code: finalCustomerCode || "", 
+                            name: finalCustomerName || "" 
+                        });
+                        localStorage.setItem("easyorder_basis", JSON.stringify(window.basisData));
+                        renderDropdownsAndSettings();
+                    }
+                }
+            } else {
+                const selectedOpt = cusSelect.options[cusSelect.selectedIndex];
+                customerId = selectedOpt ? selectedOpt.value : null;
+                finalCustomerCode = selectedOpt ? (selectedOpt.dataset.code || "") : "";
+                finalCustomerName = selectedOpt ? (selectedOpt.dataset.name || "") : "";
+            }
+
+            // 儲存業務關聯 ID 與 業務編號 (加入安全防護防止 undefined)
+            const repSelect = document.getElementById("salesRep");
+            const salesRepId = repSelect.value;
+            const selectedRepOpt = repSelect.options[repSelect.selectedIndex];
+            const salesRepCode = selectedRepOpt ? (selectedRepOpt.dataset.code || "") : "";
+            const salesRepName = selectedRepOpt ? (selectedRepOpt.dataset.name || "") : "";
+
+            const rawTotal = parseFloat(document.getElementById("display-raw-total").innerText.replace(/,/g, ''));
+            const grandTotal = parseFloat(document.getElementById("display-grand-total").innerText.replace(/,/g, ''));
+
+            const payload = {
+                docNo: docNo || "",
+                refQuotationNo: refQuotationNo || "",
+                customerId: customerId || "",
+                customerCode: finalCustomerCode || "",
+                customerName: finalCustomerName || "",
+                salesRepId: salesRepId || "",
+                salesRepCode: salesRepCode || "", // 保存業務編號
+                salesRep: salesRepName || "", 
+                email: document.getElementById("email").value || "",
+                invoiceMethod: document.getElementById("invoiceMethod").value || "",
+                deliveryMethod: document.getElementById("deliveryMethod").value || "",
+                items: validItems,
+                overallNotes: document.getElementById("overallNotes").value || "",
+                discountRate: parseInt(document.getElementById("discountRate").value) || 100,
+                discountReason: document.getElementById("discountReason").value || "",
+                rawTotal: rawTotal || 0,
+                grandTotal: grandTotal || 0,
+                type: submitType || "Quotation", 
+                status: submitType === "Quotation" ? "Draft" : "Order", 
+                salesSlipNo: window.editingOrderId ? ((window.ordersData.find(x => x.id === window.editingOrderId)?.salesSlipNo) || "") : "", 
+                createdAt: window.editingOrderId ? (window.ordersData.find(x => x.id === window.editingOrderId)?.createdAt || new Date().toISOString()) : new Date().toISOString()
+            };
+
+            const success = await window.saveOrderToDb(payload, window.editingOrderId);
+            if (success) {
+                showCustomMessage(`🎉 成功儲存單據 [單號: ${docNo}]！資料已同步。`);
+                resetForm();
+                
+                if (window.originView) {
+                    switchMode(window.originView);
+                } else {
+                    switchMode('admin');
+                }
+            }
+        }
+
+        function resetForm() {
+            window.editingOrderId = null;
+            window.clonedFromDocNo = null; // 清除複製單據來源註記
+            window.originView = null; 
+            document.getElementById("editing-indicator").classList.add("hidden");
+            document.getElementById("order-form").reset();
+            document.getElementById("desktop-items-tbody").innerHTML = "";
+            document.getElementById("mobile-items-list").innerHTML = "";
+            
+            document.getElementById("manual-customer-container").classList.add("hidden");
+            document.getElementById("btn-quote-text").innerText = "僅存為報價單";
+            document.getElementById("btn-order-text").innerText = "確認送出 (成立訂購單)";
+
+            document.getElementById("autoFillPrevious").checked = false;
+
+            document.getElementById("discount-reason-container").classList.add("hidden");
+            document.getElementById("discountReason").removeAttribute("required");
+
+            document.getElementById("display-raw-total").innerText = "0";
+            document.getElementById("display-grand-total").innerText = "0";
+            
+            initItemsForm();
+        }
+
+        // ==========================================
+        // 後台管理端邏輯
+        // ==========================================
+        window.confirmDeleteOrder = function(orderId) {
+            window.showConfirm(
+                "刪除單據",
+                "⚠️ 警告：確定要永久刪除這筆單據嗎？此操作無法復原。",
+                async () => {
+                    const ok = await window.deleteOrderFromDb(orderId);
+                    if (ok) {
+                        showCustomMessage("🗑️ 已成功刪除單據！");
+                    }
+                },
+                "danger"
+            );
+        }
+
+        window.approveOrder = async function(orderId) {
+            window.showConfirm(
+                "確認覆核",
+                "確認銷貨單內容無誤並讓該訂單進入「備貨中」狀態嗎？",
+                async () => {
+                    if (window.dbStatus === "firebase" && window.db && currentUser) {
+                        const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'orders', orderId);
+                        await updateDoc(docRef, { status: 'Preparing', updatedAt: new Date().toISOString() });
+                    } else {
+                        const order = window.ordersData.find(x => x.id === orderId);
+                        if (order) {
+                            order.status = 'Preparing';
+                            order.updatedAt = new Date().toISOString();
+                            localStorage.setItem("easyorder_orders", JSON.stringify(window.ordersData));
+                            if (typeof window.updateDashboardStats === 'function') window.updateDashboardStats();
+                            if (typeof window.renderOrderList === 'function') window.renderOrderList();
+                        }
+                    }
+                    showCustomMessage("✅ 已完成覆核，訂單進入備貨狀態！");
+                    const modal = document.getElementById('order-modal');
+                    if (!modal.classList.contains('hidden')) {
+                        viewOrderDetails(orderId); // 重新渲染 Modal 以顯示出貨按鈕
+                    }
+                },
+                "success"
+            );
+        };
+
+        window.confirmApprove = function() {
+            const orderId = document.getElementById("modal-hidden-order-id").value;
+            window.approveOrder(orderId);
+        }
+
+        // 幫助尋找單據編號所對應的 ID（用於點擊關聯單號跳轉）
+        window.findOrderIdByDocNo = function(docNo) {
+            if (!docNo) return null;
+            const found = window.ordersData.find(x => x.docNo === docNo);
+            return found ? found.id : null;
+        };
+
+        // 新增功能：退回已覆核狀態到待覆核上一步
+        window.revertPreparingToInvoiced = function(orderId) {
+            window.showConfirm(
+                "退回至待覆核",
+                "確定要取消此單據的覆核放行狀態，退回為「已登錄銷貨單 (待覆核)」嗎？",
+                async () => {
+                    if (window.dbStatus === "firebase" && window.db && currentUser) {
+                        const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'orders', orderId);
+                        await updateDoc(docRef, { status: "Invoiced", updatedAt: new Date().toISOString() });
+                    } else {
+                        const order = window.ordersData.find(x => x.id === orderId);
+                        if (order) {
+                            order.status = "Invoiced";
+                            order.updatedAt = new Date().toISOString();
+                            localStorage.setItem("easyorder_orders", JSON.stringify(window.ordersData));
+                            if (typeof window.updateDashboardStats === 'function') window.updateDashboardStats();
+                            if (typeof window.renderOrderList === 'function') window.renderOrderList();
+                        }
+                    }
+                    showCustomMessage("🔄 已成功退回覆核，單據恢復為待覆核狀態！");
+                    const modal = document.getElementById('order-modal');
+                    if (!modal.classList.contains('hidden')) {
+                        viewOrderDetails(orderId);
+                    }
+                },
+                "warning"
+            );
+        };
+
+        function renderOrderList() {
+            const tbody = document.getElementById("orders-tbody");
+            const searchInput = document.getElementById("searchInput").value.toLowerCase();
+            const filterType = document.getElementById("filterType").value;
+            const data = window.ordersData || [];
+            
+            tbody.innerHTML = "";
+
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="py-12 text-center text-slate-400">目前尚無單據資料。</td></tr>`;
+                return;
+            }
+
+            let filteredCount = 0;
+
+            data.forEach(rawOrder => {
+                const order = window.resolveOrderData(rawOrder); // 動態解析最新名稱與編號
+
+                if (filterType !== 'ALL') {
+                    if (filterType === 'Quotation' && order.type !== 'Quotation') return;
+                    if (filterType === 'Order' && (order.type !== 'Order' || order.status !== 'Order')) return;
+                    if (filterType === 'Invoiced' && order.status !== 'Invoiced') return;
+                    if (filterType === 'Preparing' && order.status !== 'Preparing') return;
+                    if (filterType === 'Shipped' && order.status !== 'Shipped') return;
+                }
+
+                if (searchInput) {
+                    const str = `${order.docNo} ${order.customerCode || ''} ${order.customerName} ${order.salesRepCode || ''} ${order.salesRep}`.toLowerCase();
+                    if (!str.includes(searchInput)) return;
+                }
+
+                filteredCount++;
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-slate-50 transition-colors";
+                
+                const d = new Date(order.createdAt);
+                const dateStr = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+                
+                let displayTypeBadge = '';
+                let displayMainNo = '';
+                let displaySubNo = '';
+
+                if (order.type === "Order" && order.salesSlipNo) {
+                    // 已轉銷貨單
+                    displayTypeBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-sky-50 text-sky-700 border border-sky-200">銷貨單</span>`;
+                    displayMainNo = order.salesSlipNo;
+                    displaySubNo = `<div class="text-[10px] text-slate-400 mt-0.5 whitespace-nowrap" title="來源訂購單號"><i class="fa-solid fa-link text-[9px] mr-0.5 opacity-70"></i>源: ${order.docNo}</div>`;
+                } else if (order.type === "Order") {
+                    // 尚未轉銷貨單的訂單
+                    displayTypeBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">訂購單</span>`;
+                    displayMainNo = order.docNo;
+                } else {
+                    // 報價單草稿
+                    displayTypeBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200">報價單</span>`;
+                    displayMainNo = order.docNo;
+                }
+
+                let statusBadge = '';
+                if (order.type === "Quotation") {
+                    statusBadge = `<span class="text-xs text-slate-400 font-medium">尚未轉單</span>`;
+                } else {
+                    if (order.status === "Shipped") {
+                        statusBadge = `
+                            <div class="space-y-1.5">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-indigo-600 text-white border border-indigo-700">
+                                    <i class="fa-solid fa-check-double mr-1"></i>已出貨結案
+                                </span>
+                                <div class="text-[10px] text-slate-500 leading-tight space-y-0.5 pl-0.5">
+                                    <div class="font-mono text-slate-700" title="ERP 銷貨單號"><i class="fa-solid fa-file-invoice text-indigo-400 mr-0.5"></i> ${order.salesSlipNo}</div>
+                                    <div class="text-[10px] text-slate-400" title="出貨時間"><i class="fa-regular fa-clock mr-0.5"></i> ${order.shippingDate ? order.shippingDate.split(' ')[0] : ''}</div>
+                                    <div class="text-indigo-600 font-medium" title="出貨方式"><i class="fa-solid fa-truck text-indigo-400 mr-0.5"></i> ${order.deliveryMethod || '未填'}</div>
+                                </div>
+                            </div>
+                        `;
+                    } else if (order.status === "Preparing") {
+                        statusBadge = `
+                            <div class="space-y-1">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                    <i class="fa-solid fa-box mr-1"></i>備貨中 (待出)
+                                </span>
+                                <span class="block text-[10px] text-emerald-600 ml-1 font-mono">${order.salesSlipNo}</span>
+                            </div>
+                        `;
+                    } else if (order.status === "Invoiced" && order.salesSlipNo) {
+                        statusBadge = `
+                            <div class="space-y-1">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-sky-50 text-sky-700 border border-sky-200">
+                                    <i class="fa-solid fa-clipboard-check mr-1 animate-pulse"></i>待業務覆核
+                                </span>
+                                <span class="block text-[10px] text-sky-600 ml-1 font-mono">${order.salesSlipNo}</span>
+                            </div>
+                        `;
+                    } else {
+                        statusBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200"><i class="fa-solid fa-hourglass-half mr-1 animate-pulse"></i>待轉銷貨單</span>`;
+                    }
+                }
+
+                const canEditQuotation = (order.type === 'Quotation');
+                const isPendingInvoice = (order.type === 'Order' && order.status === 'Order');
+                const isPendingReview  = (order.type === 'Order' && order.status === 'Invoiced');
+                const canShip = (order.type === 'Order' && order.status === 'Preparing');
+                
+                const actionButtons = `
+                    <div class="flex items-center justify-end space-x-1.5 min-w-[320px]">
+                        ${canEditQuotation ? `
+                            <button onclick="window.loadQuotationForEdit('${order.id}')" class="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-bold rounded-lg transition-colors cursor-pointer whitespace-nowrap">
+                                <i class="fa-solid fa-pen-to-square"></i> 修改報價
+                            </button>
+                            <button onclick="triggerConvertOrder('${order.id}')" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-lg transition-colors cursor-pointer whitespace-nowrap">
+                                轉訂購單
+                            </button>
+                        ` : ''}
+                        ${isPendingInvoice ? `
+                            <button onclick="window.revertOrderToQuotation('${order.id}')" class="px-3 py-1.5 bg-orange-50 hover:bg-orange-100 text-orange-700 text-xs font-bold rounded-lg transition-colors cursor-pointer whitespace-nowrap" title="退回報價單">
+                                <i class="fa-solid fa-rotate-left"></i> 退回報價
+                            </button>
+                        ` : ''}
+                        ${isPendingReview ? `
+                            <button onclick="window.approveOrder('${order.id}')" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer whitespace-nowrap" title="確認銷貨無誤並轉入備貨">
+                                <i class="fa-solid fa-clipboard-check"></i> 覆核
+                            </button>
+                        ` : ''}
+                        ${canShip ? `
+                            <button onclick="window.revertPreparingToInvoiced('${order.id}')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold rounded-lg transition-colors cursor-pointer whitespace-nowrap" title="取消覆核並退回待覆核">
+                                <i class="fa-solid fa-rotate-left"></i> 退回覆核
+                            </button>
+                            <button onclick="window.quickRegisterShipping('${order.id}')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer whitespace-nowrap" title="快速確認商品已發貨">
+                                <i class="fa-solid fa-truck-fast"></i> 出貨
+                            </button>
+                        ` : ''}
+                        <button onclick="viewOrderDetails('${order.id}')" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-colors cursor-pointer whitespace-nowrap">
+                            檢視詳情
+                        </button>
+                        <button onclick="window.confirmDeleteOrder('${order.id}')" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold rounded-lg transition-colors cursor-pointer whitespace-nowrap" title="永久刪除單據">
+                            <i class="fa-regular fa-trash-can"></i>
+                        </button>
+                    </div>
+                `;
+
+                // 組合客戶顯示字串 (若有編號則顯示)
+                const customerDisplay = order.customerCode 
+                    ? `<span class="bg-slate-100 text-slate-500 text-[10px] px-1.5 py-0.5 rounded font-mono mr-1.5 border border-slate-200">${order.customerCode}</span>${escapeHtml(order.customerName)}`
+                    : escapeHtml(order.customerName);
+
+                // 組合負責業務顯示字串 (隱藏業務編號)
+                const salesRepDisplayStr = escapeHtml(order.salesRep);
+
+                tr.innerHTML = `
+                    <td class="py-3 px-6 text-xs text-slate-500 font-mono align-middle">${dateStr}</td>
+                    <td class="py-3 px-6 align-middle">
+                        <div class="mb-1">${displayTypeBadge}</div>
+                        <span class="text-xs font-bold font-mono text-slate-700 block whitespace-nowrap">${displayMainNo}</span>
+                        ${displaySubNo}
+                    </td>
+                    <td class="py-3 px-6 align-middle">
+                        <div class="text-sm font-bold text-slate-800 whitespace-nowrap flex items-center">
+                            ${customerDisplay}
+                        </div>
+                        <div class="text-[11px] font-medium text-slate-500 mt-1 whitespace-nowrap flex items-center">
+                            <i class="fa-regular fa-user mr-1 opacity-70"></i> ${salesRepDisplayStr}
+                        </div>
+                    </td>
+                    <td class="py-3 px-6 text-xs font-bold text-indigo-600 align-middle font-mono">$${(order.grandTotal || 0).toLocaleString()}</td>
+                    <td class="py-3 px-6 text-sm whitespace-nowrap align-middle">${statusBadge}</td>
+                    <td class="py-3 px-6 text-right align-middle">${actionButtons}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            if (filteredCount === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="py-12 text-center text-slate-400">找不到符合條件的單據。</td></tr>`;
+            }
+        }
+
+        function updateDashboardStats() {
+            const data = window.ordersData || [];
+
+            const quotations = data.filter(x => x.type === 'Quotation').length;
+            const orders = data.filter(x => x.type === 'Order' && x.status === 'Order').length;
+            const invoiced = data.filter(x => x.status === 'Invoiced').length;
+            const preparing = data.filter(x => x.status === 'Preparing').length;
+            const shipped = data.filter(x => x.status === 'Shipped').length;
+
+            let totalRev = 0;
+            data.forEach(x => {
+                if (x.type === 'Order') { 
+                    totalRev += (x.grandTotal || 0);
+                }
+            });
+
+            document.getElementById("stat-quotations").innerText = quotations;
+            document.getElementById("stat-orders").innerText = orders;
+            document.getElementById("stat-invoiced").innerText = invoiced;
+            document.getElementById("stat-preparing").innerText = preparing;
+            document.getElementById("stat-shipped").innerText = shipped;
+            document.getElementById("stat-revenue").innerText = "$" + totalRev.toLocaleString();
+        }
+
+        function viewOrderDetails(orderId) {
+            const rawOrder = window.ordersData.find(x => x.id === orderId);
+            if (!rawOrder) return;
+
+            const order = window.resolveOrderData(rawOrder);
+
+            document.getElementById("modal-hidden-order-id").value = order.id;
+            
+            document.getElementById("modal-doc-no").innerText = order.docNo;
+            const d = new Date(order.createdAt);
+            document.getElementById("modal-date").innerText = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+            
+            document.getElementById("modal-type").innerText = order.type === "Quotation" ? "報價單 (草稿)" : "正式訂購單";
+            document.getElementById("modal-type").className = order.type === "Quotation" ? "font-bold text-slate-600" : "font-bold text-indigo-600";
+            
+            const salesRepDisplay = escapeHtml(order.salesRep);
+            document.getElementById("modal-sales").innerHTML = salesRepDisplay;
+            
+            const customerDisplay = order.customerCode 
+                    ? `<span class="bg-indigo-100 border border-indigo-200 text-indigo-700 text-[10px] px-1.5 py-0.5 rounded font-mono mr-1.5">${order.customerCode}</span>${escapeHtml(order.customerName)}`
+                    : escapeHtml(order.customerName);
+            document.getElementById("modal-customer").innerHTML = customerDisplay;
+            
+            document.getElementById("modal-email").innerText = order.email || "未提供";
+            document.getElementById("modal-invoice-method").innerText = order.invoiceMethod || "未提供";
+            document.getElementById("modal-delivery-method").innerText = order.deliveryMethod || "未提供";
+            document.getElementById("modal-notes").innerText = order.overallNotes || "無備註說明";
+
+            // 處理單據前後關聯追溯
+            const relationContainer = document.getElementById("modal-relation-container");
+            const relationLink = document.getElementById("modal-relation-link");
+            relationContainer.classList.add("hidden");
+            relationLink.innerHTML = "";
+
+            if (order.refQuotationNo) {
+                const prevId = window.findOrderIdByDocNo(order.refQuotationNo);
+                relationContainer.classList.remove("hidden");
+                if (prevId) {
+                    relationLink.innerHTML = `
+                        <button onclick="window.viewOrderDetails('${prevId}')" class="text-indigo-600 hover:text-indigo-800 underline flex items-center gap-1.5 text-xs text-left cursor-pointer font-bold">
+                            <i class="fa-solid fa-arrow-left"></i> 來源報價單: ${order.refQuotationNo}
+                        </button>
+                    `;
+                } else {
+                    relationLink.innerHTML = `<span class="text-slate-400 text-xs">來源報價單: ${order.refQuotationNo} (已刪除)</span>`;
+                }
+            } else if (order.type === "Quotation") {
+                const subsequent = (window.ordersData || []).find(x => x.refQuotationNo === order.docNo);
+                if (subsequent) {
+                    relationContainer.classList.remove("hidden");
+                    relationLink.innerHTML = `
+                        <button onclick="window.viewOrderDetails('${subsequent.id}')" class="text-indigo-600 hover:text-indigo-800 underline flex items-center gap-1.5 text-xs text-left cursor-pointer font-bold">
+                            後續轉正式單: ${subsequent.docNo} <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    `;
+                }
+            }
+
+            const statusEl = document.getElementById("modal-sales-slip-status");
+            const backfillArea = document.getElementById("assistant-invoice-area");
+            const approveArea = document.getElementById("sales-approve-area");
+            const shippingArea = document.getElementById("shipper-delivery-area");
+
+            backfillArea.classList.add("hidden");
+            approveArea.classList.add("hidden");
+            shippingArea.classList.add("hidden");
+
+            if (order.type === "Quotation") {
+                statusEl.innerHTML = `<span class="text-slate-400">本單據目前僅為【報價單】，業務尚未確認轉為訂單，不需登錄銷貨單。</span>`;
+            } else {
+                if (order.status === "Shipped") {
+                    statusEl.innerHTML = `
+                        <div class="space-y-2 bg-indigo-50 p-3 rounded-xl border border-indigo-200 text-sm">
+                            <div class="flex items-center gap-1.5 text-indigo-800 font-extrabold text-xs">
+                                <i class="fa-solid fa-circle-check text-indigo-600"></i> 已出貨結案 (流程完成)
+                            </div>
+                            <div class="grid grid-cols-1 gap-1 text-xs text-slate-700 pt-1.5 border-t border-indigo-100">
+                                <div><span class="text-slate-400 font-bold">銷貨單號：</span><span class="font-mono text-slate-800 font-bold bg-white px-1.5 py-0.5 rounded border border-indigo-100 shadow-sm">${order.salesSlipNo || '未填寫'}</span></div>
+                                <div><span class="text-slate-400 font-bold">出貨時間：</span><span class="text-slate-800 font-medium">${order.shippingDate || '未記錄'}</span></div>
+                                <div><span class="text-slate-400 font-bold">出貨方式：</span><span class="text-indigo-700 font-bold bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100">${order.deliveryMethod || '未填寫'}</span></div>
+                            </div>
+                        </div>
+                    `;
+                } else if (order.status === "Preparing") {
+                    statusEl.innerHTML = `
+                        <div class="space-y-2 bg-emerald-50/50 p-2.5 rounded-xl border border-emerald-100">
+                            <span class="text-emerald-700 font-bold block text-xs"><i class="fa-solid fa-box-open"></i> 業務已覆核（倉庫備貨中）</span>
+                            <span class="text-slate-600 text-xs block">ERP 銷貨單號: <span class="font-mono text-emerald-800 font-bold text-sm bg-emerald-100 px-1.5 py-0.5 rounded">${order.salesSlipNo}</span></span>
+                            <div class="pt-2 border-t border-emerald-200/60 mt-2 text-right">
+                                <button onclick="window.revertPreparingToInvoiced('${order.id}')" class="text-rose-500 hover:text-rose-700 text-[11px] font-bold cursor-pointer transition-colors"><i class="fa-solid fa-rotate-left"></i> 退回上一步 (待業務覆核)</button>
+                            </div>
+                        </div>
+                    `;
+                    shippingArea.classList.remove("hidden"); 
+                } else if (order.status === "Invoiced" && order.salesSlipNo) {
+                    statusEl.innerHTML = `
+                        <div class="space-y-2 bg-sky-50/50 p-2.5 rounded-xl border border-sky-100">
+                            <span class="text-sky-700 font-bold block text-xs">已登錄銷貨單（等待業務覆核）</span>
+                            <div class="flex items-center justify-between mt-1">
+                                <span class="text-slate-600 text-xs block">ERP 銷貨單號: <span class="font-mono text-sky-800 font-bold text-sm bg-sky-100 px-1.5 py-0.5 rounded">${order.salesSlipNo}</span></span>
+                                <button onclick="window.enableEditSalesSlipNo('${order.salesSlipNo}')" class="text-sky-600 hover:text-sky-800 text-[11px] font-bold cursor-pointer bg-sky-100/50 px-2 py-1 rounded transition-colors"><i class="fa-solid fa-pen"></i> 修改</button>
+                            </div>
+                            <div class="pt-2 border-t border-sky-200/60 mt-2 text-right">
+                                <button onclick="window.revertToPendingInvoice('${order.id}')" class="text-rose-500 hover:text-rose-700 text-[11px] font-bold cursor-pointer transition-colors"><i class="fa-solid fa-rotate-left"></i> 退回待轉銷貨單</button>
+                            </div>
+                        </div>
+                    `;
+                    approveArea.classList.remove("hidden");
+                } else {
+                    statusEl.innerHTML = `<span class="text-amber-600 font-bold">等待助理完成銷貨登錄</span>`;
+                    backfillArea.classList.remove("hidden");
+                    document.getElementById("assistant-invoice-input").value = "";
+                }
+            }
+
+            const tbody = document.getElementById("modal-items-tbody");
+            tbody.innerHTML = "";
+            (order.items || []).forEach(item => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="py-2 px-4 text-slate-700 font-medium">${escapeHtml(item.name)}</td>
+                        <td class="py-2 px-4 text-right font-mono">${item.qty}</td>
+                        <td class="py-2 px-4 text-right font-mono text-slate-500">$${(item.price || 0).toLocaleString()}</td>
+                        <td class="py-2 px-4 text-right font-mono font-bold text-slate-700">$${(item.subtotal || 0).toLocaleString()}</td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById("modal-raw-total").innerText = "$" + (order.rawTotal || 0).toLocaleString();
+            document.getElementById("modal-discount-rate").innerText = order.discountRate || 100;
+            document.getElementById("modal-discount-reason").innerText = order.discountReason ? `(折讓原因: ${order.discountReason})` : "";
+            document.getElementById("modal-grand-total").innerText = "$" + (order.grandTotal || 0).toLocaleString();
+
+            openModal('order-modal');
+        }
+
+        window.enableEditSalesSlipNo = function(currentNo) {
+            document.getElementById("assistant-invoice-area").classList.remove("hidden");
+            const input = document.getElementById("assistant-invoice-input");
+            input.value = currentNo;
+            input.focus();
+            document.getElementById("sales-approve-area").classList.add("hidden");
+        };
+
+        window.revertToPendingInvoice = function(orderId) {
+            window.showConfirm(
+                "退回待轉銷貨單",
+                "確定要清除目前的銷貨單號，並將單據退回「待轉銷貨單」狀態嗎？",
+                async () => {
+                    if (window.dbStatus === "firebase" && window.db && currentUser) {
+                        const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'orders', orderId);
+                        await updateDoc(docRef, { salesSlipNo: "", status: "Order", updatedAt: new Date().toISOString() });
+                    } else {
+                        const order = window.ordersData.find(x => x.id === orderId);
+                        if (order) {
+                            order.salesSlipNo = "";
+                            order.status = "Order";
+                            order.updatedAt = new Date().toISOString();
+                            localStorage.setItem("easyorder_orders", JSON.stringify(window.ordersData));
+                            if (typeof window.updateDashboardStats === 'function') window.updateDashboardStats();
+                            if (typeof window.renderOrderList === 'function') window.renderOrderList();
+                        }
+                    }
+                    showCustomMessage("🔄 已退回「待轉銷貨單」狀態！");
+                    viewOrderDetails(orderId);
+                },
+                "warning"
+            );
+        };
+
+        async function submitInvoiceNo(event) {
+            event.preventDefault();
+            const orderId = document.getElementById("modal-hidden-order-id").value;
+            const slipNo = document.getElementById("assistant-invoice-input").value.trim();
+            if (!slipNo) return;
+
+            const currentData = window.ordersData || [];
+            const order = currentData.find(x => x.id === orderId);
+            if (!order) return;
+
+            if (window.dbStatus === "firebase" && window.db && currentUser) {
+                const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'orders', orderId);
+                await updateDoc(docRef, {
+                    salesSlipNo: slipNo,
+                    status: 'Invoiced',
+                    updatedAt: new Date().toISOString()
+                });
+            } else {
+                order.salesSlipNo = slipNo;
+                order.status = 'Invoiced';
+                order.updatedAt = new Date().toISOString();
+                localStorage.setItem("easyorder_orders", JSON.stringify(window.ordersData));
+                if (typeof window.updateDashboardStats === 'function') window.updateDashboardStats();
+                if (typeof window.renderOrderList === 'function') window.renderOrderList();
+            }
+
+            showCustomMessage(`✅ 已成功將單據綁定銷貨單號，並轉交業務覆核！`);
+            viewOrderDetails(orderId); 
+        }
+        
+        window.confirmShipping = async function() {
+            const orderId = document.getElementById("modal-hidden-order-id").value;
+            await triggerDeliverySystemHook({id: orderId});
+            viewOrderDetails(orderId); 
+        }
+        
+        window.quickRegisterShipping = async function(orderId) {
+            await triggerDeliverySystemHook({id: orderId});
+        }
+
+        window.revertOrderToQuotation = function(orderId) {
+            window.showConfirm(
+                "退回報價單",
+                "確定要將此「待轉銷貨單」退回為「報價單」嗎？\n退回後業務端將可重新對其進行編輯與修改。",
+                async () => {
+                    const currentData = window.ordersData || [];
+                    const order = currentData.find(x => x.id === orderId);
+                    if (!order) return;
+
+                    const revertedDocNo = order.refQuotationNo || window.generateDocNumber("Quotation");
+
+                    if (window.dbStatus === "firebase" && window.db && currentUser) {
+                        const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'orders', orderId);
+                        await updateDoc(docRef, {
+                            type: 'Quotation',
+                            status: 'Draft',
+                            docNo: revertedDocNo,
+                            refQuotationNo: "", 
+                            updatedAt: new Date().toISOString()
+                        });
+                    } else {
+                        order.docNo = revertedDocNo;
+                        order.refQuotationNo = "";
+                        order.type = 'Quotation';
+                        order.status = 'Draft';
+                        order.updatedAt = new Date().toISOString();
+                        localStorage.setItem("easyorder_orders", JSON.stringify(window.ordersData));
+                        if (typeof window.updateDashboardStats === 'function') window.updateDashboardStats();
+                        if (typeof window.renderOrderList === 'function') window.renderOrderList();
+                    }
+                    showCustomMessage("🔄 已成功將單據退回「報價單」狀態！");
+                },
+                "warning"
+            );
+        }
+
+        window.convertQuotationToOrder = async function(orderId) {
+            const currentData = window.ordersData || [];
+            const rfq = currentData.find(x => x.id === orderId);
+            if (!rfq) return false;
+
+            const newOrderNo = window.generateDocNumber("Order");
+
+            if (window.dbStatus === "firebase" && window.db && currentUser) {
+                const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'orders', orderId);
+                
+                const docSnap = await getDoc(docRef);
+                if (!docSnap.exists()) {
+                    const payloadClone = { ...rfq };
+                    delete payloadClone.id;
+                    await setDoc(newDocRef, payloadClone);
+                }
+
+                await updateDoc(docRef, {
+                    type: 'Order',
+                    status: 'Order',
+                    docNo: newOrderNo,
+                    refQuotationNo: rfq.docNo || "", 
+                    updatedAt: new Date().toISOString()
+                });
+            } else {
+                rfq.refQuotationNo = rfq.docNo || "";
+                rfq.docNo = newOrderNo;
+                rfq.type = 'Order';
+                rfq.status = 'Order';
+                rfq.updatedAt = new Date().toISOString();
+                localStorage.setItem("easyorder_orders", JSON.stringify(window.ordersData));
+                if (typeof window.updateDashboardStats === 'function') window.updateDashboardStats();
+                if (typeof window.renderOrderList === 'function') window.renderOrderList();
+            }
+            return true;
+        }
+
+        async function triggerConvertOrder(orderId) {
+            const ok = await window.convertQuotationToOrder(orderId);
+            if (ok) {
+                showCustomMessage("🎉 已成功將報價單轉換為『正式訂購單』！待業助確認。");
+                renderOrderList();
+            }
+        }
+        
+        async function triggerDeliverySystemHook(orderData) {
+            const d = new Date();
+            const shipTime = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+            
+            if (window.dbStatus === "firebase" && window.db && currentUser) {
+                const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'orders', orderData.id);
+                await updateDoc(docRef, {
+                    status: 'Shipped',
+                    shippingDate: shipTime,
+                    updatedAt: new Date().toISOString()
+                });
+            } else {
+                const order = window.ordersData.find(x => x.id === orderData.id);
+                if(order) {
+                    order.status = 'Shipped';
+                    order.shippingDate = shipTime;
+                    order.updatedAt = new Date().toISOString();
+                    localStorage.setItem("easyorder_orders", JSON.stringify(window.ordersData));
+                    if (typeof window.updateDashboardStats === 'function') window.updateDashboardStats();
+                    if (typeof window.renderOrderList === 'function') window.renderOrderList();
+                }
+            }
+            showCustomMessage(`📦 商品出貨作業已確認！系統已自動壓註出貨時間。`);
+        }
+
+        function exportToCSV() {
+            const data = window.ordersData || [];
+            if (data.length === 0) {
+                showCustomMessage("目前沒有資料可以匯出", "error");
+                return;
+            }
+
+            let csv = "\uFEFF"; 
+            csv += "單據號碼,原報價單號,單據日期,單據類型,客戶編號,客戶名稱,業務編號,負責業務,電子信箱,發票開立方式,出貨方式,預定出貨日,實際出貨日,套用折數,折讓原因,大計未稅金額,銷貨單號,品項明細\n";
+
+            data.forEach(rawOrder => {
+                const order = window.resolveOrderData(rawOrder);
+                const cleanDocNo = order.docNo || "";
+                const cleanRefNo = order.refQuotationNo || "";
+                const d = new Date(order.createdAt);
+                const dateStr = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+                
+                const cleanCusCode = `"${(order.customerCode || "").replace(/"/g, '""')}"`;
+                const cleanCompany = `"${(order.customerName || "").replace(/"/g, '""')}"`;
+                const cleanSalesCode = `"${(order.salesRepCode || "").replace(/"/g, '""')}"`;
+                const cleanSales = `"${(order.salesRep || "").replace(/"/g, '""')}"`;
+                const cleanEmail = `"${(order.email || "").replace(/"/g, '""')}"`;
+                const cleanMethod = `"${(order.invoiceMethod || "").replace(/"/g, '""')}"`;
+                const cleanDelivery = `"${(order.deliveryMethod || "").replace(/"/g, '""')}"`;
+                const discountStr = order.discountRate ? order.discountRate + "%" : "100%";
+                const cleanReason = `"${(order.discountReason || "").replace(/"/g, '""')}"`;
+                const cleanInvoiceNo = order.salesSlipNo || "";
+                
+                let itemsStr = (order.items || []).map(i => `${i.name}*${i.qty}`).join(" / ");
+                const cleanItems = `"${itemsStr.replace(/"/g, '""')}"`;
+                
+                const shippingDateStr = order.shippingDate || "未出貨";
+
+                csv += `${cleanDocNo},${cleanRefNo},${dateStr},${order.type === 'Quotation'?'報價單':'訂購單'},${cleanCusCode},${cleanCompany},${cleanSalesCode},${cleanSales},${cleanEmail},${cleanMethod},${cleanDelivery},${order.deliveryDate || ''},${shippingDateStr},${discountStr},${cleanReason},${order.grandTotal},${cleanInvoiceNo},${cleanItems}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", `EasyOrder_單據總表_${new Date().getTime()}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // ==========================================
+        // 儲存與清除自訂雲端設定相關方法
+        // ==========================================
+        window.saveCustomCloudConfig = function() {
+            const appId = document.getElementById("cloud-app-id").value.trim() || 'easy-order-pro-1';
+            const apiKey = document.getElementById("cloud-apiKey").value.trim();
+            const authDomain = document.getElementById("cloud-authDomain").value.trim();
+            const projectId = document.getElementById("cloud-projectId").value.trim();
+            const storageBucket = document.getElementById("cloud-storageBucket").value.trim();
+            const firebaseAppId = document.getElementById("cloud-firebaseAppId").value.trim();
+
+            if (!apiKey || !projectId || !firebaseAppId) {
+                showCustomMessage("請填寫必要的 Firebase 金鑰與識別配置 (ApiKey, ProjectId, AppId)！", "error");
+                return;
+            }
+
+            const customConfig = {
+                appId: appId,
+                config: {
+                    apiKey: apiKey,
+                    authDomain: authDomain,
+                    projectId: projectId,
+                    storageBucket: storageBucket,
+                    appId: firebaseAppId
+                }
+            };
+
+            localStorage.setItem("custom_firebase_config", JSON.stringify(customConfig));
+            showCustomMessage("💾 雲端連線同步設定已儲存！即將重新整理以啟動雲端連線...", "success");
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        };
+
+        window.clearCloudConfig = function() {
+            window.showConfirm(
+                "確認中斷雲端連線？",
+                "確定要中斷雲端連線並清除本機儲存的金鑰配置嗎？系統將自動安全回復至離線單機模式。",
+                () => {
+                    localStorage.removeItem("custom_firebase_config");
+                    showCustomMessage("🗑️ 雲端設定已清除，系統將安全重啟回復至單機模式...", "warning");
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                },
+                "danger"
+            );
+        };
+
+        function loadCloudConfigFields() {
+            const savedConfig = localStorage.getItem("custom_firebase_config");
+            const badge = document.getElementById("cloud-badge");
+            
+            if (window.dbStatus === "firebase") {
+                badge.className = "px-2.5 py-1 text-xs font-bold rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 animate-pulse";
+                badge.innerHTML = `<i class="fa-solid fa-cloud"></i> 雲端已連線 (AppID: ${window.appId})`;
+            } else {
+                badge.className = "px-2.5 py-1 text-xs font-bold rounded-full bg-amber-100 text-amber-700 border border-amber-200";
+                badge.innerHTML = `<i class="fa-solid fa-plane"></i> 離線單機運作中`;
+            }
+
+            if (savedConfig) {
+                try {
+                    const parsed = JSON.parse(savedConfig);
+                    document.getElementById("cloud-app-id").value = parsed.appId || '';
+                    document.getElementById("cloud-apiKey").value = parsed.config.apiKey || '';
+                    document.getElementById("cloud-authDomain").value = parsed.config.authDomain || '';
+                    document.getElementById("cloud-projectId").value = parsed.config.projectId || '';
+                    document.getElementById("cloud-storageBucket").value = parsed.config.storageBucket || '';
+                    document.getElementById("cloud-firebaseAppId").value = parsed.config.appId || '';
+                } catch(e) {
+                    console.error("讀取歷史雲端設定失敗:", e);
+                }
+            }
+        }
+
+        // ==========================================
+        // 工具函數
+        // ==========================================
+        function openModal(id) {
+            const modal = document.getElementById(id);
+            modal.classList.remove('hidden');
+        }
+
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            modal.classList.add('hidden');
+        }
+
+        function escapeHtml(text) {
+            if (!text) return "";
+            const div = document.createElement('div');
+            div.innerText = text;
+            return div.innerHTML;
+        }
+
+        function showCustomMessage(message, type = "success") {
+            const toast = document.createElement("div");
+            toast.className = `fixed bottom-5 right-5 px-5 py-4 rounded-xl shadow-2xl z-[100] flex items-center gap-3 transform transition-all duration-300 translate-y-5 opacity-0 border`;
+            
+            if (type === "success") {
+                toast.className += " bg-emerald-50 border-emerald-200 text-emerald-800";
+                toast.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-500 text-xl"></i><span class="font-bold">${message}</span>`;
+            } else if (type === "warning") {
+                toast.className += " bg-amber-50 border-amber-200 text-amber-800";
+                toast.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-500 text-xl"></i><span>${message}</span>`;
+            } else {
+                toast.className += " bg-rose-50 border-rose-200 text-rose-800";
+                toast.innerHTML = `<i class="fa-solid fa-circle-xmark text-rose-500 text-xl"></i><span>${message}</span>`;
+            }
+
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.classList.remove("translate-y-5", "opacity-0"), 10);
+            setTimeout(() => {
+                toast.classList.add("translate-y-5", "opacity-0");
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        // 綁定全域調用
+        window.switchMode = switchMode;
+        window.setFormPreviewMode = setFormPreviewMode;
+        window.setSubmitTypeAndSubmit = setSubmitTypeAndSubmit;
+        window.addNewOrderItemRow = addNewOrderItemRow;
+        window.deleteItemRow = deleteItemRow;
+        window.syncField = syncField;
+        window.calculateGrandTotals = calculateGrandTotals;
+        window.submitInvoiceNo = submitInvoiceNo;
+        window.triggerConvertOrder = triggerConvertOrder;
+        window.viewOrderDetails = viewOrderDetails;
+        window.exportToCSV = exportToCSV;
+        window.openModal = openModal;
+        window.closeModal = closeModal;
+        window.renderOrderList = renderOrderList;
+        window.updateDashboardStats = updateDashboardStats;
+        window.renderDropdownsAndSettings = renderDropdownsAndSettings;
+        window.approveOrder = approveOrder;
+        window.confirmApprove = confirmApprove;
+        window.revertPreparingToInvoiced = revertPreparingToInvoiced;
+        window.handleAddSalesRep = handleAddSalesRep;
+        window.openEditBasisModal = openEditBasisModal;
+        window.submitEditBasis = submitEditBasis;
+        window.deleteBasisData = deleteBasisData;
+        window.handleAddCustomer = handleAddCustomer;
+        window.handleAddBasisData = handleAddBasisData;
+        window.revertOrderToQuotation = revertOrderToQuotation;
+        window.quickRegisterShipping = quickRegisterShipping;
+        window.revertToPendingInvoice = revertToPendingInvoice;
+        window.enableEditSalesSlipNo = enableEditSalesSlipNo;
+        window.loadQuotationForEdit = loadQuotationForEdit;
+        window.cancelEditing = cancelEditing;
+        window.duplicateOrder = duplicateOrder; 
+
+        window.addEventListener("DOMContentLoaded", () => {
+            initItemsForm();
+            initializeDatabase(); // 頁面初始化時，自動判斷並載入對應資料庫
+        });
+    </script>
+</body>
+</html>
