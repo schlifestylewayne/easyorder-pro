@@ -433,7 +433,7 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 
-                <!-- ☁️ 雲端同步與多台電腦連線設定面板 -->
+                <!-- ☁️ 雲端同步與多台電腦連線設定面板 (重要新增) -->
                 <div class="bg-white rounded-2xl shadow-sm border border-indigo-200 overflow-hidden col-span-1 md:col-span-2 p-6 space-y-4">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-3 gap-2">
                         <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
@@ -567,7 +567,7 @@
     <!-- 客製化彈出視窗與互動模態框 (相容 iPad 觸控) -->
     <!-- ============================================== -->
 
-    <!-- 全局確認操作 Modal -->
+    <!-- 全局確認操作 Modal (取代原生 confirm) -->
     <div id="confirm-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-[60] flex justify-center items-center p-4">
         <div class="bg-white rounded-2xl w-full max-w-sm shadow-2xl transform transition-all p-6 text-center">
             <div id="confirm-icon-container" class="w-16 h-16 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-3xl mx-auto mb-4">
@@ -582,7 +582,7 @@
         </div>
     </div>
 
-    <!-- 單據詳情 Modal -->
+    <!-- 單據詳情 Modal (含業助銷貨/出貨操作) -->
     <div id="order-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex justify-center items-center p-4">
         <div class="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl transform transition-all border border-slate-200" onclick="event.stopPropagation()">
             <!-- Header -->
@@ -640,7 +640,7 @@
                                 <div id="modal-sales-slip-status" class="text-sm"></div>
                             </div>
                             
-                            <!-- 助理回填銷貨單號區 -->
+                            <!-- 助理回填銷貨單號區 (僅當訂單狀態時顯示) -->
                             <div id="assistant-invoice-area" class="mt-2 hidden">
                                 <form onsubmit="submitInvoiceNo(event)" class="flex gap-2">
                                     <input type="hidden" id="modal-hidden-order-id">
@@ -651,7 +651,7 @@
                                 </form>
                             </div>
 
-                            <!-- 業務覆核區 -->
+                            <!-- 業務覆核區 (僅當已登錄銷貨時顯示) -->
                             <div id="sales-approve-area" class="mt-2 hidden text-center">
                                 <button onclick="window.confirmApprove()" class="w-full px-4 py-3 bg-sky-600 text-white font-bold text-sm rounded-lg hover:bg-sky-700 transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer">
                                     <i class="fa-solid fa-clipboard-check"></i> 業務確認覆核無誤 (轉入備貨)
@@ -659,7 +659,7 @@
                                 <p class="text-[10px] text-slate-400 mt-2">請確認銷貨內容無誤後放行</p>
                             </div>
 
-                            <!-- 出貨確認區 -->
+                            <!-- 出貨確認區 (僅當備貨中時顯示) -->
                             <div id="shipper-delivery-area" class="mt-2 hidden text-center">
                                 <button onclick="window.confirmShipping()" class="w-full px-4 py-3 bg-emerald-600 text-white font-bold text-sm rounded-lg hover:bg-emerald-700 transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer">
                                     <i class="fa-solid fa-truck-fast"></i> 確認完成商品出貨
@@ -751,28 +751,28 @@
         // 🚀 系統擁有者專用：部署與權限設定區
         // ==========================================
         
-        // 1. 寫死您的 Firebase 設定 (將 null 替換為您的設定物件)
+        // 1. 寫死您的 Firebase 設定
         // 只要填寫這裡，任何拿到此 HTML 連結的人，都不需要再手動輸入金鑰，開啟即用！
-        const SYSTEM_FIREBASE_CONFIG = null; 
-        /* 👇 填寫範例 (請去除註解並填寫您的金鑰) 👇：
         const SYSTEM_FIREBASE_CONFIG = {
-            apiKey: "AIzaSy...",
-            authDomain: "your-project.firebaseapp.com",
-            projectId: "your-project",
-            storageBucket: "your-project.appspot.com",
-            messagingSenderId: "123456789",
-            appId: "1:123456:web:abcdef"
+            apiKey: "您的_API_KEY",
+            authDomain: "您的專案ID.firebaseapp.com",
+            projectId: "您的專案ID",
+            storageBucket: "您的專案ID.firebasestorage.app",
+            messagingSenderId: "您的_SENDER_ID",
+            appId: "您的_APP_ID"
         };
-        */
+        
         const SYSTEM_APP_ID = "easy-order-pro-sales"; // 您的專案或公司簡稱 (英文/數字/橫線)
 
         // 2. 存取權限控制 (Google Gmail 登入限制)
-        const REQUIRE_GOOGLE_LOGIN = false; // 將 false 改為 true 即強制要求所有人用 Google 登入
+        const REQUIRE_GOOGLE_LOGIN = true; // 🌟 這裡改成 true：強制所有人開啟網頁時必須登入
         
         // 允許登入的 Email 白名單
         const ALLOWED_EMAILS = [
-            // "boss@mycompany.com", // 若有填寫，則「只有」名單內的信箱能登入。
-            // "sales1@gmail.com",   // 若留空 []，則只要是有 Google 帳號的人皆可登入。
+            "boss@gmail.com",       // 改成您自己的 Gmail
+            "sales_01@gmail.com",   // 改成業務 A 的 Gmail
+            "sales_02@gmail.com"    // 改成業務 B 的 Gmail
+            // 若把這個陣列清空保留為 []，則「任何擁有 Google 帳號的人」都能登入。
         ];
         // ==========================================
 
@@ -1383,7 +1383,7 @@
                 }
             }
 
-            // 執行關聯更新 (Cascade Update)
+            // 執行關聯更新 (Cascade Update)：當修改客戶與業務時，將同步覆寫所有包含該資料的歷史單據
             if (col === 'customers' || col === 'salesReps') {
                 window.ordersData.forEach(async (o) => {
                     let shouldUpdateOrder = false;
@@ -1425,6 +1425,100 @@
 
             closeModal('edit-basis-modal');
             showCustomMessage(`修改成功，且所有相關單據已連動更新！`);
+        }
+
+        // ==========================================
+        // 一鍵複製/範本承接功能：以此單據為藍本建立新單
+        // ==========================================
+        window.duplicateOrder = function(orderId) {
+            const rawOrder = window.ordersData.find(x => x.id === orderId);
+            if (!rawOrder) return;
+            
+            const order = window.resolveOrderData(rawOrder);
+            
+            // 複製成全新單據，因此不帶入既有 editingOrderId 與 clonedFromDocNo
+            window.editingOrderId = null;
+            window.clonedFromDocNo = order.docNo;
+            window.originView = 'admin'; 
+            
+            // 配置修改中提示元件
+            const indicator = document.getElementById("editing-indicator");
+            const iconBox = document.getElementById("editing-icon-box");
+            const icon = document.getElementById("editing-icon");
+            const title = document.getElementById("editing-title");
+            const subtitle = document.getElementById("editing-subtitle");
+            
+            indicator.className = "bg-sky-50 border-sky-200 rounded-xl p-4 flex items-center justify-between mb-4 animate-in fade-in border";
+            iconBox.className = "w-10 h-10 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center text-lg";
+            icon.className = "fa-solid fa-copy";
+            title.className = "font-bold text-sky-800 text-sm";
+            title.innerText = "已複製前次單據交易內容";
+            subtitle.className = "text-xs text-sky-600 mt-0.5";
+            subtitle.innerHTML = `您正在基於單號 <span class="font-bold underline decoration-sky-300 underline-offset-2">${order.docNo}</span> 建立全新的單據。送出後將產生全新編號，不影響原單。`;
+            indicator.classList.remove("hidden");
+
+            // 回填基礎客戶資訊
+            const customerSelect = document.getElementById("customerName");
+            let customerFound = Array.from(customerSelect.options).find(opt => order.customerId ? opt.value === order.customerId : opt.dataset.name === order.customerName);
+            
+            if (customerFound) {
+                customerSelect.value = customerFound.value;
+                document.getElementById("manual-customer-container").classList.add("hidden");
+                document.getElementById("manualCustomerName").removeAttribute("required");
+            } else {
+                customerSelect.value = "__MANUAL__";
+                document.getElementById("manual-customer-container").classList.remove("hidden");
+                document.getElementById("manualCustomerCode").value = order.customerCode || "";
+                document.getElementById("manualCustomerName").value = order.customerName || "";
+                document.getElementById("manualCustomerName").setAttribute("required", "true");
+            }
+
+            const repSelect = document.getElementById("salesRep");
+            let repFound = Array.from(repSelect.options).find(opt => order.salesRepId ? opt.value === order.salesRepId : (opt.dataset.name && opt.dataset.name === order.salesRep));
+            if (repFound) {
+                repSelect.value = repFound.value;
+            } else {
+                let repFoundByName = Array.from(repSelect.options).find(opt => opt.dataset.name === order.salesRep);
+                if (repFoundByName) repSelect.value = repFoundByName.value;
+            }
+
+            document.getElementById("email").value = order.email || "";
+            document.getElementById("invoiceMethod").value = order.invoiceMethod || "";
+            document.getElementById("deliveryMethod").value = order.deliveryMethod || "";
+            document.getElementById("overallNotes").value = order.overallNotes || "";
+            document.getElementById("discountRate").value = order.discountRate || 100;
+            document.getElementById("discountReason").value = order.discountReason || "";
+            
+            // 特殊折讓欄位狀態
+            const reasonContainer = document.getElementById("discount-reason-container");
+            const reasonInput = document.getElementById("discountReason");
+            if (order.discountRate < 100) {
+                reasonContainer.classList.remove("hidden");
+                reasonInput.setAttribute("required", "true");
+            } else {
+                reasonContainer.classList.add("hidden");
+                reasonInput.removeAttribute("required");
+            }
+
+            // 深拷貝商品明細，並確保末行自動延展
+            window.orderItems = JSON.parse(JSON.stringify(order.items || []));
+            if (window.orderItems.length === 0) {
+                window.orderItems.push({ name: "", qty: "", price: "", subtotal: 0 });
+            } else {
+                const lastItem = window.orderItems[window.orderItems.length - 1];
+                if (lastItem.name.trim() !== "") {
+                    window.orderItems.push({ name: "", qty: "", price: "", subtotal: 0 });
+                }
+            }
+            rebuildAllRows(); 
+            calculateGrandTotals();
+            
+            document.getElementById("btn-quote-text").innerText = "另存為新報價單";
+            document.getElementById("btn-order-text").innerText = "確認送出 (成立全新訂購單)";
+
+            switchMode('customer');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            showCustomMessage("📋 已複製前次單據內容！您可以修改後作為新單送出。");
         }
 
         // ==========================================
@@ -1566,6 +1660,7 @@
             const reasonContainer = document.getElementById("discount-reason-container");
             const reasonInput = document.getElementById("discountReason");
 
+            // 確保一開始是隱藏的
             reasonContainer.classList.add("hidden");
 
             discountInput.addEventListener("input", function() {
@@ -1574,6 +1669,7 @@
                 if (val > 100) val = 100;
                 this.value = val;
 
+                // 改用穩定的 hidden 類別切換
                 if (val < 100) {
                     reasonContainer.classList.remove("hidden");
                     reasonInput.setAttribute("required", "true");
@@ -1607,6 +1703,7 @@
                     manualNameInput.value = "";
                     document.getElementById("manualCustomerCode").value = "";
 
+                    // 若勾選項已打勾，則自動帶入該客戶上一次歷史交易紀錄
                     const customerId = this.value;
                     const autoFillChecked = document.getElementById("autoFillPrevious").checked;
                     if (customerId && autoFillChecked) {
@@ -1621,23 +1718,28 @@
         window.applyPreviousOrderData = function(customerId) {
             const customerOrders = (window.ordersData || []).filter(o => o.customerId === customerId);
             if (customerOrders.length > 0) {
+                // 依日期排序（新到舊）
                 customerOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
                 const lastOrder = customerOrders[0];
                 
+                // 1. 自動匹配負責業務
                 const repSelect = document.getElementById("salesRep");
                 if (lastOrder.salesRepId && Array.from(repSelect.options).some(o => o.value === lastOrder.salesRepId)) {
                     repSelect.value = lastOrder.salesRepId;
                 }
                 
+                // 2. 帶入聯絡信箱
                 if (lastOrder.email) {
                     document.getElementById("email").value = lastOrder.email;
                 }
                 
+                // 3. 帶入發票開立方式
                 const invSelect = document.getElementById("invoiceMethod");
                 if (lastOrder.invoiceMethod && Array.from(invSelect.options).some(o => o.value === lastOrder.invoiceMethod)) {
                     invSelect.value = lastOrder.invoiceMethod;
                 }
                 
+                // 4. 帶入出貨管道 / 方式
                 const delSelect = document.getElementById("deliveryMethod");
                 if (lastOrder.deliveryMethod && Array.from(delSelect.options).some(o => o.value === lastOrder.deliveryMethod)) {
                     delSelect.value = lastOrder.deliveryMethod;
@@ -1771,11 +1873,13 @@
         }
 
         function renderDropdownsAndSettings() {
+            // 備份當前已被選取的表單值以防止異步更新覆寫
             const curCustomer = document.getElementById("customerName").value;
             const curSalesRep = document.getElementById("salesRep").value;
             const curInvoice = document.getElementById("invoiceMethod").value;
             const curDelivery = document.getElementById("deliveryMethod").value;
 
+            // 客戶
             const cusSelect = document.getElementById("customerName");
             cusSelect.innerHTML = `
                 <option value="" disabled selected>請選擇現有客戶 (或選擇手動輸入新客戶)</option>
@@ -1799,6 +1903,7 @@
                 `;
             });
 
+            // 業務
             const repSelect = document.getElementById("salesRep");
             repSelect.innerHTML = `<option value="" disabled selected>請選擇業務人員</option>`;
             const setRepList = document.getElementById("settings-salesreps-list");
@@ -1819,6 +1924,7 @@
                 `;
             });
 
+            // 發票方式
             const invSelect = document.getElementById("invoiceMethod");
             invSelect.innerHTML = `<option value="" disabled selected>請選擇</option>`;
             const setInvList = document.getElementById("settings-invoicemethods-list");
@@ -1836,6 +1942,7 @@
                 `;
             });
 
+            // 出貨方式
             const delSelect = document.getElementById("deliveryMethod");
             delSelect.innerHTML = `<option value="" disabled selected>請選擇</option>`;
             const setDelList = document.getElementById("settings-deliverymethods-list");
@@ -1853,6 +1960,7 @@
                 `;
             });
 
+            // 還原先前的選取值，或者是自動綁定正在修改中的單據值
             if (curCustomer && Array.from(cusSelect.options).some(o => o.value === curCustomer)) {
                 cusSelect.value = curCustomer;
             } else if (window.editingOrderId) {
@@ -1882,6 +1990,9 @@
             }
         }
 
+        // ==========================================
+        // 智慧單號自動生成 (保證唯一、每日 01 流水號開始)
+        // ==========================================
         window.generateDocNumber = function(type) {
             const now = new Date();
             const yy = String(now.getFullYear()).slice(-2);
@@ -1893,6 +2004,7 @@
             let maxSuffix = 0;
             
             (window.ordersData || []).forEach(o => {
+                // 1. 檢查主單號 (docNo)
                 if (o.docNo && o.docNo.startsWith(prefix)) {
                     const suffixStr = o.docNo.slice(prefix.length);
                     const suffix = parseInt(suffixStr, 10);
@@ -1901,6 +2013,8 @@
                     }
                 }
                 
+                // 2. 檢查來源報價單號 (refQuotationNo)
+                // 避免報價單轉訂單後 (主單號變成 OD)，原本的 QT 單號被系統誤認為未被使用而重複配發，導致退回時衝突
                 if (o.refQuotationNo && o.refQuotationNo.startsWith(prefix)) {
                     const suffixStr = o.refQuotationNo.slice(prefix.length);
                     const suffix = parseInt(suffixStr, 10);
@@ -1949,12 +2063,14 @@
                     refQuotationNo = original.docNo || ""; 
                 }
             } else if (window.clonedFromDocNo) {
+                // 如果是複製單據，則依照送出類型重新生成一筆全新的單號，並關聯前單（若原單為報價單且轉成訂單）
                 docNo = window.generateDocNumber(submitType);
                 if (window.clonedFromDocNo.startsWith("QT-") && submitType === "Order") {
                     refQuotationNo = window.clonedFromDocNo;
                 }
             }
 
+            // 判斷客戶編號與名稱，並儲存關聯 ID
             let finalCustomerCode = "";
             let finalCustomerName = "";
             let customerId = null;
@@ -1968,6 +2084,7 @@
                     return;
                 }
 
+                // 自動寫入客戶名單基礎數據表 (防重機制)
                 const existingCustomer = window.basisData.customers.find(x => x.name.trim() === finalCustomerName);
                 if (existingCustomer) {
                     customerId = existingCustomer.id;
@@ -2004,6 +2121,7 @@
                 finalCustomerName = selectedOpt ? (selectedOpt.dataset.name || "") : "";
             }
 
+            // 儲存業務關聯 ID 與 業務編號 (加入安全防護防止 undefined)
             const repSelect = document.getElementById("salesRep");
             const salesRepId = repSelect.value;
             const selectedRepOpt = repSelect.options[repSelect.selectedIndex];
@@ -2020,7 +2138,7 @@
                 customerCode: finalCustomerCode || "",
                 customerName: finalCustomerName || "",
                 salesRepId: salesRepId || "",
-                salesRepCode: salesRepCode || "", 
+                salesRepCode: salesRepCode || "", // 保存業務編號
                 salesRep: salesRepName || "", 
                 email: document.getElementById("email").value || "",
                 invoiceMethod: document.getElementById("invoiceMethod").value || "",
@@ -2052,7 +2170,7 @@
 
         function resetForm() {
             window.editingOrderId = null;
-            window.clonedFromDocNo = null;
+            window.clonedFromDocNo = null; // 清除複製單據來源註記
             window.originView = null; 
             document.getElementById("editing-indicator").classList.add("hidden");
             document.getElementById("order-form").reset();
@@ -2074,6 +2192,9 @@
             initItemsForm();
         }
 
+        // ==========================================
+        // 後台管理端邏輯
+        // ==========================================
         window.confirmDeleteOrder = function(orderId) {
             window.showConfirm(
                 "刪除單據",
@@ -2109,7 +2230,7 @@
                     showCustomMessage("✅ 已完成覆核，訂單進入備貨狀態！");
                     const modal = document.getElementById('order-modal');
                     if (!modal.classList.contains('hidden')) {
-                        viewOrderDetails(orderId);
+                        viewOrderDetails(orderId); // 重新渲染 Modal 以顯示出貨按鈕
                     }
                 },
                 "success"
@@ -2121,12 +2242,14 @@
             window.approveOrder(orderId);
         }
 
+        // 幫助尋找單據編號所對應的 ID（用於點擊關聯單號跳轉）
         window.findOrderIdByDocNo = function(docNo) {
             if (!docNo) return null;
             const found = window.ordersData.find(x => x.docNo === docNo);
             return found ? found.id : null;
         };
 
+        // 新增功能：退回已覆核狀態到待覆核上一步
         window.revertPreparingToInvoiced = function(orderId) {
             window.showConfirm(
                 "退回至待覆核",
@@ -2171,7 +2294,7 @@
             let filteredCount = 0;
 
             data.forEach(rawOrder => {
-                const order = window.resolveOrderData(rawOrder); 
+                const order = window.resolveOrderData(rawOrder); // 動態解析最新名稱與編號
 
                 if (filterType !== 'ALL') {
                     if (filterType === 'Quotation' && order.type !== 'Quotation') return;
@@ -2198,13 +2321,16 @@
                 let displaySubNo = '';
 
                 if (order.type === "Order" && order.salesSlipNo) {
+                    // 已轉銷貨單
                     displayTypeBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-sky-50 text-sky-700 border border-sky-200">銷貨單</span>`;
                     displayMainNo = order.salesSlipNo;
                     displaySubNo = `<div class="text-[10px] text-slate-400 mt-0.5 whitespace-nowrap" title="來源訂購單號"><i class="fa-solid fa-link text-[9px] mr-0.5 opacity-70"></i>源: ${order.docNo}</div>`;
                 } else if (order.type === "Order") {
+                    // 尚未轉銷貨單的訂單
                     displayTypeBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">訂購單</span>`;
                     displayMainNo = order.docNo;
                 } else {
+                    // 報價單草稿
                     displayTypeBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200">報價單</span>`;
                     displayMainNo = order.docNo;
                 }
@@ -2291,10 +2417,12 @@
                     </div>
                 `;
 
+                // 組合客戶顯示字串 (若有編號則顯示)
                 const customerDisplay = order.customerCode 
                     ? `<span class="bg-slate-100 text-slate-500 text-[10px] px-1.5 py-0.5 rounded font-mono mr-1.5 border border-slate-200">${order.customerCode}</span>${escapeHtml(order.customerName)}`
                     : escapeHtml(order.customerName);
 
+                // 組合負責業務顯示字串 (隱藏業務編號)
                 const salesRepDisplayStr = escapeHtml(order.salesRep);
 
                 tr.innerHTML = `
@@ -2376,6 +2504,7 @@
             document.getElementById("modal-delivery-method").innerText = order.deliveryMethod || "未提供";
             document.getElementById("modal-notes").innerText = order.overallNotes || "無備註說明";
 
+            // 處理單據前後關聯追溯
             const relationContainer = document.getElementById("modal-relation-container");
             const relationLink = document.getElementById("modal-relation-link");
             relationContainer.classList.add("hidden");
