@@ -65,6 +65,21 @@
 </head>
 <body class="text-slate-800 antialiased min-h-screen flex flex-col">
 
+    <!-- Google 登入遮罩層 (預設隱藏) -->
+    <div id="login-overlay" class="fixed inset-0 bg-slate-100/95 backdrop-blur-sm z-[100] hidden flex-col items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl max-w-md w-full text-center border border-slate-200">
+            <div class="w-20 h-20 bg-indigo-50 rounded-2xl flex items-center justify-center text-4xl text-indigo-600 mx-auto mb-6 shadow-inner">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <h2 class="text-2xl font-extrabold text-slate-800 mb-2">系統存取權限保護</h2>
+            <p class="text-slate-500 text-sm mb-8">此企業系統已開啟存取限制，請使用獲得授權的 Google 帳號進行登入以繼續操作。</p>
+            <button onclick="window.handleGoogleLogin()" class="w-full py-3.5 px-4 bg-white border-2 border-slate-200 hover:bg-slate-50 hover:border-indigo-300 text-slate-700 font-bold rounded-xl transition-all flex items-center justify-center gap-3 shadow-sm cursor-pointer">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="w-5 h-5">
+                使用 Google 帳號驗證身分
+            </button>
+        </div>
+    </div>
+
     <!-- 頂部導航條 -->
     <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -729,8 +744,38 @@
     <!-- Firebase / 邏輯腳本 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // ==========================================
+        // 🚀 系統擁有者專用：部署與權限設定區
+        // ==========================================
+        
+        // 1. 寫死您的 Firebase 設定 (將 null 替換為您的設定物件)
+        // 只要填寫這裡，任何拿到此 HTML 連結的人，都不需要再手動輸入金鑰，開啟即用！
+        const SYSTEM_FIREBASE_CONFIG = null; 
+        /* 👇 填寫範例 (請去除註解並填寫您的金鑰) 👇：
+        const SYSTEM_FIREBASE_CONFIG = {
+            apiKey: "您的_API_KEY",
+            authDomain: "您的專案ID.firebaseapp.com",
+            projectId: "您的專案ID",
+            storageBucket: "您的專案ID.firebasestorage.app",
+            messagingSenderId: "您的_SENDER_ID",
+            appId: "您的_APP_ID"
+        };
+        */
+        const SYSTEM_APP_ID = "easy-order-pro-sales"; // 您的專案或公司簡稱 (英文/數字/橫線)
+
+        // 2. 存取權限控制 (Google Gmail 登入限制)
+        const REQUIRE_GOOGLE_LOGIN = true; // 強制要求所有人開啟時用 Google 登入
+        
+        // 允許登入的 Email 白名單
+        const ALLOWED_EMAILS = [
+            // 🌟 關鍵解鎖：已為您清空白名單！
+            // 保持空陣列 []，代表「任何 Google 帳號都能登入」，不會再被假的帳號給擋下。
+            // 💡 等您自己順利登入且測試沒問題後，再把您真實的 Email 加進來（例如："my.name@gmail.com"）就能安全鎖定權限囉！
+        ];
+        // ==========================================
 
         // 全域狀態變數
         window.appId = typeof __app_id !== 'undefined' ? __app_id : 'easy-order-pro-1';
@@ -758,8 +803,13 @@
             let config = null;
             let targetAppId = 'easy-order-pro-1';
 
+            // 0. 最高優先級：讀取開發者寫死在程式碼中的全域設定
+            if (typeof SYSTEM_FIREBASE_CONFIG !== 'undefined' && SYSTEM_FIREBASE_CONFIG !== null) {
+                config = SYSTEM_FIREBASE_CONFIG;
+                targetAppId = SYSTEM_APP_ID || 'easy-order-pro-1';
+            }
             // 1. 優先檢查環境變數（系統運行時自備的 Firebase）
-            if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+            else if (typeof __firebase_config !== 'undefined' && __firebase_config) {
                 try {
                     config = JSON.parse(__firebase_config);
                     targetAppId = typeof __app_id !== 'undefined' ? __app_id : 'easy-order-pro-1';
@@ -789,32 +839,60 @@
                     window.auth = getAuth(app);
                     window.db = getFirestore(app);
 
-                    // RULE 3 - 先行並等待身分認證 (Anonymous / Token)
-                    let userCredential;
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        userCredential = await signInWithCustomToken(window.auth, __initial_auth_token);
+                    if (REQUIRE_GOOGLE_LOGIN) {
+                        // --- 啟用 Google 帳號強制登入模式 ---
+                        onAuthStateChanged(window.auth, (user) => {
+                            if (user && !user.isAnonymous) {
+                                // 檢查 Email 白名單
+                                if (ALLOWED_EMAILS.length > 0 && !ALLOWED_EMAILS.includes(user.email)) {
+                                    signOut(window.auth);
+                                    showCustomMessage("此帳號無存取權限，請聯絡系統管理員", "error");
+                                    document.getElementById("login-overlay").classList.remove("hidden");
+                                    return;
+                                }
+                                
+                                currentUser = user;
+                                window.dbStatus = "firebase";
+                                document.getElementById("login-overlay").classList.add("hidden");
+                                
+                                const banner = document.getElementById("connection-banner");
+                                banner.className = "bg-emerald-50 border-b border-emerald-200 text-emerald-700 py-2 px-4 text-xs font-bold text-center shadow-inner block";
+                                banner.innerHTML = `<i class="fa-solid fa-cloud text-emerald-500 mr-1 animate-bounce"></i> 雲端已連線 - 授權身分: ${user.email} <button onclick="window.handleSignOut()" class="ml-3 px-2 py-0.5 bg-emerald-600 text-white rounded hover:bg-emerald-700 font-bold transition-colors cursor-pointer shadow-sm">登出</button>`;
+                                
+                                listenToFirestore();
+                            } else {
+                                // 未登入或為匿名狀態，顯示強制登入遮罩
+                                document.getElementById("login-overlay").classList.remove("hidden");
+                            }
+                        });
                     } else {
-                        userCredential = await signInAnonymously(window.auth);
-                    }
-
-                    currentUser = userCredential.user;
-                    window.dbStatus = "firebase";
-
-                    onAuthStateChanged(window.auth, (user) => {
-                        if (user) {
-                            currentUser = user;
-                            window.dbStatus = "firebase";
-                            
-                            // 更新橫幅
-                            const banner = document.getElementById("connection-banner");
-                            banner.className = "bg-emerald-50 border-b border-emerald-200 text-emerald-700 py-2 px-4 text-xs font-bold text-center shadow-inner block";
-                            banner.innerHTML = `<i class="fa-solid fa-cloud text-emerald-500 mr-1 animate-bounce"></i> 雲端同步中 - 多裝置數據已即時同步 (AppID: ${window.appId})`;
-                            
-                            listenToFirestore();
+                        // --- 原有邏輯：免登入直接匿名進入 ---
+                        let userCredential;
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                            userCredential = await signInWithCustomToken(window.auth, __initial_auth_token);
                         } else {
-                            fallbackToLocal("連線中斷");
+                            userCredential = await signInAnonymously(window.auth);
                         }
-                    });
+
+                        currentUser = userCredential.user;
+                        window.dbStatus = "firebase";
+
+                        onAuthStateChanged(window.auth, (user) => {
+                            if (user) {
+                                currentUser = user;
+                                window.dbStatus = "firebase";
+                                
+                                // 更新橫幅
+                                const banner = document.getElementById("connection-banner");
+                                banner.className = "bg-emerald-50 border-b border-emerald-200 text-emerald-700 py-2 px-4 text-xs font-bold text-center shadow-inner block";
+                                banner.innerHTML = `<i class="fa-solid fa-cloud text-emerald-500 mr-1 animate-bounce"></i> 雲端同步中 - 多裝置數據已即時同步 (AppID: ${window.appId})`;
+                                
+                                listenToFirestore();
+                            } else {
+                                fallbackToLocal("連線中斷");
+                            }
+                        });
+                    }
 
                 } catch (error) {
                     console.error("Firebase 連線初始化失敗:", error);
@@ -823,6 +901,24 @@
             } else {
                 fallbackToLocal("無雲端設定 (單機運作中)");
             }
+        }
+
+        // --- 新增：Google 登入與登出處理函數 ---
+        window.handleGoogleLogin = async function() {
+            if (!window.auth) return;
+            const provider = new GoogleAuthProvider();
+            try {
+                await signInWithPopup(window.auth, provider);
+            } catch (error) {
+                console.error("Login failed", error);
+                showCustomMessage("登入失敗或您已取消", "error");
+            }
+        }
+
+        window.handleSignOut = async function() {
+            if (!window.auth) return;
+            await signOut(window.auth);
+            window.location.reload();
         }
 
         function fallbackToLocal(reason) {
@@ -2897,6 +2993,8 @@
         window.loadQuotationForEdit = loadQuotationForEdit;
         window.cancelEditing = cancelEditing;
         window.duplicateOrder = duplicateOrder; 
+        window.handleGoogleLogin = handleGoogleLogin;
+        window.handleSignOut = handleSignOut;
 
         window.addEventListener("DOMContentLoaded", () => {
             initItemsForm();
