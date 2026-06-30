@@ -143,13 +143,13 @@
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
                     <div class="bg-slate-50 border-b border-slate-100 px-6 py-4">
                         <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                            <i class="fa-regular fa-address-card text-indigo-500"></i> 客戶與發票資訊
+                            <i class="fa-regular fa-address-card text-indigo-500"></i> 客戶資訊
                         </h2>
                     </div>
-                    <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                         
                         <!-- 選擇客戶 / 手動輸入 -->
-                        <div class="col-span-1 lg:col-span-2 space-y-1">
+                        <div class="col-span-1 md:col-span-2 space-y-1">
                             <div class="flex justify-between items-end mb-1">
                                 <label class="block text-xs font-bold text-slate-600">客戶名稱 <span class="text-rose-500">*</span></label>
                                 <label class="flex items-center gap-1.5 text-xs text-slate-500 cursor-pointer hover:text-indigo-600 transition-colors font-medium">
@@ -181,24 +181,16 @@
                         </div>
 
                         <div class="space-y-1">
-                            <label class="block text-xs font-bold text-slate-600 mb-1">聯絡 Email</label>
-                            <input type="email" id="email" class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-colors" placeholder="user@example.com">
-                        </div>
-
-                        <div class="space-y-1">
-                            <label class="block text-xs font-bold text-slate-600 mb-1">發票開立方式 <span class="text-rose-500">*</span></label>
-                            <select id="invoiceMethod" required class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-colors appearance-none bg-white cursor-pointer">
-                                <option value="" disabled selected>請選擇</option>
-                                <!-- JS動態載入 -->
-                            </select>
-                        </div>
-                        
-                        <div class="space-y-1">
                             <label class="block text-xs font-bold text-slate-600 mb-1">出貨管道 / 方式 <span class="text-rose-500">*</span></label>
                             <select id="deliveryMethod" required class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-colors appearance-none bg-white cursor-pointer">
-                                <option value="" disabled selected>請選擇</option>
+                                <option value="" disabled selected>請選擇出貨方式</option>
                                 <!-- JS動態載入 -->
                             </select>
+                        </div>
+
+                        <div class="col-span-1 md:col-span-2 space-y-1">
+                            <label class="block text-xs font-bold text-slate-600 mb-1">聯絡 Email</label>
+                            <input type="email" id="email" class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-colors" placeholder="user@example.com">
                         </div>
                     </div>
                 </div>
@@ -214,15 +206,16 @@
 
                     <!-- 【桌機寬版模式 表格】 -->
                     <div id="desktop-items-container" class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse min-w-[700px]">
+                        <table class="w-full text-left border-collapse min-w-[850px]">
                             <thead>
                                 <tr class="bg-white border-b border-slate-200">
                                     <th class="w-12 py-3 px-4 text-center font-bold text-slate-400 text-xs uppercase">#</th>
+                                    <th class="w-32 py-3 px-4 font-bold text-slate-600 text-xs uppercase">商品編號</th>
                                     <th class="py-3 px-4 font-bold text-slate-600 text-xs uppercase">品項名稱 (商品描述) <span class="text-rose-500">*</span></th>
-                                    <th class="w-28 py-3 px-4 font-bold text-slate-600 text-xs uppercase text-center">屬性</th>
+                                    <th class="w-28 py-3 px-4 font-bold text-slate-600 text-xs uppercase text-center">特殊扣減</th>
                                     <th class="w-24 py-3 px-4 font-bold text-slate-600 text-xs uppercase text-right">數量 <span class="text-rose-500">*</span></th>
                                     <th class="w-32 py-3 px-4 font-bold text-slate-600 text-xs uppercase text-right">單價(含稅) <span class="text-rose-500">*</span></th>
-                                    <th class="w-32 py-3 px-4 font-bold text-slate-600 text-xs uppercase text-right">小計</th>
+                                    <th class="w-28 py-3 px-4 font-bold text-slate-600 text-xs uppercase text-right">小計</th>
                                     <th class="w-16 py-3 px-4 text-center font-bold text-slate-400 text-xs uppercase">移除</th>
                                 </tr>
                             </thead>
@@ -334,7 +327,7 @@
                     <div>
                         <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">銷貨與出貨進度</span>
                         <span class="text-2xl font-extrabold text-slate-800 block mt-1">
-                            <span id="stat-invoiced" class="text-amber-600" title="待業務覆核">0</span> <span class="text-[10px] text-slate-400 font-normal">待覆核</span>
+                            <span id="stat-invoiced" class="text-amber-600" title="待業務覆核">0</span> <span class="text-[10px] text-slate-400 font-normal">待覆</span>
                             <span class="text-slate-300 font-normal mx-0.5">/</span>
                             <span id="stat-preparing" class="text-emerald-600" title="備貨中">0</span> <span class="text-[10px] text-slate-400 font-normal">備貨</span>
                             <span class="text-slate-300 font-normal mx-0.5">/</span>
@@ -619,10 +612,11 @@
                     <div class="space-y-4">
                         <h4 class="font-bold text-slate-800 border-b border-slate-200 pb-2 text-sm"><i class="fa-solid fa-circle-info text-indigo-400 mr-1"></i>基本交易條件</h4>
                         <ul class="space-y-2 text-sm">
-                            <li class="flex justify-between"><span class="text-slate-500">電子信箱:</span> <span id="modal-email" class="font-medium"></span></li>
-                            <li class="flex justify-between"><span class="text-slate-500">發票方式:</span> <span id="modal-invoice-method" class="font-medium"></span></li>
-                            <li class="flex justify-between"><span class="text-slate-500">出貨管道:</span> <span id="modal-delivery-method" class="font-medium"></span></li>
-                            <li class="flex justify-between"><span class="text-slate-500">業務備註:</span></li>
+                            <li class="flex justify-between items-center"><span class="text-slate-500">電子信箱:</span> <span id="modal-email" class="font-medium"></span></li>
+                            <li class="flex justify-between items-center"><span class="text-slate-500">出貨管道:</span> <span id="modal-delivery-method" class="font-medium"></span></li>
+                            <!-- 發票開立方式改由業助後台填寫後才會有值 -->
+                            <li class="flex justify-between items-center"><span class="text-slate-500">發票方式:</span> <span id="modal-invoice-method" class="font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200 text-[11px]">尚未填寫</span></li>
+                            <li class="flex justify-between items-center"><span class="text-slate-500">業務備註:</span></li>
                         </ul>
                         <div class="bg-amber-50/50 border border-amber-100 p-3 rounded-xl text-sm text-amber-800 whitespace-pre-wrap min-h-[60px]" id="modal-notes"></div>
                     </div>
@@ -637,12 +631,21 @@
                             
                             <!-- 助理回填銷貨單號區 (僅當訂單狀態時顯示) -->
                             <div id="assistant-invoice-area" class="mt-2 hidden">
-                                <form onsubmit="submitInvoiceNo(event)" class="flex gap-2">
+                                <form onsubmit="submitInvoiceNo(event)" class="flex flex-col gap-2">
                                     <input type="hidden" id="modal-hidden-order-id">
-                                    <input type="text" id="assistant-invoice-input" placeholder="輸入ERP銷貨單號回填..." required class="flex-grow rounded-lg border border-indigo-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
-                                    <button type="submit" class="px-4 py-2 bg-indigo-600 text-white font-bold text-sm rounded-lg hover:bg-indigo-700 transition-colors whitespace-nowrap shadow-sm cursor-pointer">
-                                        轉銷貨登錄
-                                    </button>
+                                    <div class="flex items-center justify-between gap-2">
+                                        <label class="text-[11px] font-bold text-indigo-700 whitespace-nowrap">確認發票方式:</label>
+                                        <select id="modal-invoice-input" required class="flex-grow rounded-lg border border-indigo-200 bg-indigo-50/50 px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+                                            <option value="" disabled selected>請選擇發票開立方式...</option>
+                                            <!-- JS動態載入 -->
+                                        </select>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <input type="text" id="assistant-invoice-input" placeholder="輸入ERP銷貨單號回填..." required class="flex-grow rounded-lg border border-indigo-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+                                        <button type="submit" class="px-4 py-2 bg-indigo-600 text-white font-bold text-sm rounded-lg hover:bg-indigo-700 transition-colors whitespace-nowrap shadow-sm cursor-pointer">
+                                            轉銷貨登錄
+                                        </button>
+                                    </div>
                                 </form>
                             </div>
 
@@ -669,9 +672,10 @@
                 <div>
                     <h4 class="font-bold text-slate-800 border-b border-slate-200 pb-2 mb-3 text-sm"><i class="fa-solid fa-box-open text-indigo-400 mr-1"></i>品項明細清單</h4>
                     <div class="border border-slate-200 rounded-xl overflow-hidden overflow-x-auto">
-                        <table class="w-full text-left text-sm min-w-[500px]">
+                        <table class="w-full text-left text-sm min-w-[600px]">
                             <thead class="bg-slate-50 border-b border-slate-200">
                                 <tr>
+                                    <th class="py-2 px-4 text-slate-700 font-bold w-32">商品編號</th>
                                     <th class="py-2 px-4 text-slate-700 font-bold">品項</th>
                                     <th class="py-2 px-4 text-slate-700 font-bold text-right w-16">數量</th>
                                     <th class="py-2 px-4 text-slate-700 font-bold text-right w-24">單價</th>
@@ -683,18 +687,18 @@
                             </tbody>
                             <tfoot class="bg-slate-50 border-t border-slate-200">
                                 <tr>
-                                    <td colspan="3" class="py-2 px-4 text-right font-medium text-slate-500">原始合計 (含稅)</td>
+                                    <td colspan="4" class="py-2 px-4 text-right font-medium text-slate-500">原始合計 (含稅)</td>
                                     <td class="py-2 px-4 text-right font-bold" id="modal-raw-total"></td>
                                 </tr>
                                 <tr>
-                                    <td colspan="3" class="py-2 px-4 text-right font-medium text-slate-500">套用折扣</td>
+                                    <td colspan="4" class="py-2 px-4 text-right font-medium text-slate-500">套用折扣</td>
                                     <td class="py-2 px-4 text-right text-rose-600 font-bold"><span id="modal-discount-rate"></span>%</td>
                                 </tr>
                                 <tr>
-                                    <td colspan="4" class="py-1 px-4 text-right text-xs text-rose-500" id="modal-discount-reason"></td>
+                                    <td colspan="5" class="py-1 px-4 text-right text-xs text-rose-500" id="modal-discount-reason"></td>
                                 </tr>
                                 <tr class="bg-indigo-50">
-                                    <td colspan="3" class="py-3 px-4 text-right font-extrabold text-indigo-800 text-base">應收大計 (含稅)</td>
+                                    <td colspan="4" class="py-3 px-4 text-right font-extrabold text-indigo-800 text-base">應收大計 (含稅)</td>
                                     <td class="py-3 px-4 text-right font-extrabold text-indigo-800 text-lg" id="modal-grand-total"></td>
                                 </tr>
                             </tfoot>
@@ -1325,7 +1329,6 @@
             }
 
             document.getElementById("email").value = order.email || "";
-            document.getElementById("invoiceMethod").value = order.invoiceMethod || "";
             document.getElementById("deliveryMethod").value = order.deliveryMethod || "";
             document.getElementById("overallNotes").value = order.overallNotes || "";
             document.getElementById("discountRate").value = order.discountRate || 100;
@@ -1345,11 +1348,11 @@
             // 深拷貝商品明細，並確保末行自動延展
             window.orderItems = JSON.parse(JSON.stringify(order.items || []));
             if (window.orderItems.length === 0) {
-                window.orderItems.push({ name: "", qty: "", price: "", subtotal: 0, isRetention: false, isSample: false });
+                window.orderItems.push({ code: "", name: "", qty: "", price: "", subtotal: 0, isRetention: false, isSample: false });
             } else {
                 const lastItem = window.orderItems[window.orderItems.length - 1];
                 if (lastItem.name.trim() !== "") {
-                    window.orderItems.push({ name: "", qty: "", price: "", subtotal: 0, isRetention: false, isSample: false });
+                    window.orderItems.push({ code: "", name: "", qty: "", price: "", subtotal: 0, isRetention: false, isSample: false });
                 }
             }
             rebuildAllRows(); 
@@ -1417,7 +1420,6 @@
             }
 
             document.getElementById("email").value = order.email || "";
-            document.getElementById("invoiceMethod").value = order.invoiceMethod || "";
             document.getElementById("deliveryMethod").value = order.deliveryMethod || "";
             document.getElementById("overallNotes").value = order.overallNotes || "";
             document.getElementById("discountRate").value = order.discountRate || 100;
@@ -1575,24 +1577,18 @@
                     document.getElementById("email").value = lastOrder.email;
                 }
                 
-                // 3. 帶入發票開立方式
-                const invSelect = document.getElementById("invoiceMethod");
-                if (lastOrder.invoiceMethod && Array.from(invSelect.options).some(o => o.value === lastOrder.invoiceMethod)) {
-                    invSelect.value = lastOrder.invoiceMethod;
-                }
-                
-                // 4. 帶入出貨管道 / 方式
+                // 3. 帶入出貨管道 / 方式
                 const delSelect = document.getElementById("deliveryMethod");
                 if (lastOrder.deliveryMethod && Array.from(delSelect.options).some(o => o.value === lastOrder.deliveryMethod)) {
                     delSelect.value = lastOrder.deliveryMethod;
                 }
                 
-                showCustomMessage(`💡 已為您自動帶入該客戶前次交易條件（業務、發票、配送管道等）！`);
+                showCustomMessage(`💡 已為您自動帶入該客戶前次交易條件（業務、配送管道等）！`);
             }
         };
 
-        function addNewOrderItemRow(name = "", qty = "", price = "") {
-            window.orderItems.push({ name, qty, price, subtotal: 0, isRetention: false, isSample: false });
+        function addNewOrderItemRow(code = "", name = "", qty = "", price = "") {
+            window.orderItems.push({ code, name, qty, price, subtotal: 0, isRetention: false, isSample: false });
             rebuildAllRows();
         }
 
@@ -1683,11 +1679,14 @@
                 tr.innerHTML = `
                     <td class="py-2 px-4 text-center text-slate-400 text-xs font-mono">${index + 1}</td>
                     <td class="py-2 px-4">
+                        <input type="text" id="desk-code-${index}" value="${item.code || ''}" oninput="syncField(${index}, 'code', this.value)" placeholder="編號(選)" class="w-full rounded-lg border-transparent hover:border-slate-300 focus:border-indigo-500/50 px-2 py-1.5 text-xs bg-transparent transition-all font-mono">
+                    </td>
+                    <td class="py-2 px-4">
                         <input type="text" id="desk-name-${index}" value="${item.name}" oninput="syncField(${index}, 'name', this.value)" placeholder="${isLast ? '輸入新商品名稱...' : '商品描述'}" class="w-full rounded-lg border-transparent hover:border-slate-300 focus:border-indigo-500/50 px-3 py-1.5 text-sm bg-transparent transition-all" ${isLast && index===0 ? 'required' : ''}>
                     </td>
                     <td class="py-2 px-4">
                         <div class="flex flex-col gap-1.5 items-center justify-center">
-                            <label class="flex items-center gap-1.5 text-[11px] cursor-pointer text-slate-600 font-bold"><input type="checkbox" id="desk-retention-${index}" ${item.isRetention ? 'checked' : ''} onchange="syncField(${index}, 'isRetention', this.checked)" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer w-3.5 h-3.5"> 扣保留</label>
+                            <label class="flex items-center gap-1.5 text-[11px] cursor-pointer text-slate-600 font-bold"><input type="checkbox" id="desk-retention-${index}" ${item.isRetention ? 'checked' : ''} onchange="syncField(${index}, 'isRetention', this.checked)" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer w-3.5 h-3.5"> 鎖貨</label>
                             <label class="flex items-center gap-1.5 text-[11px] cursor-pointer text-slate-600 font-bold"><input type="checkbox" id="desk-sample-${index}" ${item.isSample ? 'checked' : ''} onchange="syncField(${index}, 'isSample', this.checked)" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer w-3.5 h-3.5"> 樣品</label>
                         </div>
                     </td>
@@ -1712,12 +1711,17 @@
                 if(isLast) card.classList.add("border-indigo-300", "shadow-indigo-100");
                 card.innerHTML = `
                     ${(!isLast || window.orderItems.length > 1) ? `<button type="button" onclick="deleteItemRow(${index})" class="absolute top-2 right-2 w-8 h-8 rounded-full text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors flex items-center justify-center cursor-pointer"><i class="fa-solid fa-xmark"></i></button>` : ''}
-                    <div class="mb-3">
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">品項名稱 #${index + 1}</label>
-                        <input type="text" id="mob-name-${index}" value="${item.name}" oninput="syncField(${index}, 'name', this.value)" placeholder="輸入商品描述..." class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50" ${isLast && index===0 ? 'required' : ''}>
-                        <div class="flex gap-4 mt-2.5 px-1">
-                            <label class="flex items-center gap-1.5 text-[11px] cursor-pointer text-slate-600 font-bold"><input type="checkbox" id="mob-retention-${index}" ${item.isRetention ? 'checked' : ''} onchange="syncField(${index}, 'isRetention', this.checked)" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer w-3.5 h-3.5"> 扣保留</label>
-                            <label class="flex items-center gap-1.5 text-[11px] cursor-pointer text-slate-600 font-bold"><input type="checkbox" id="mob-sample-${index}" ${item.isSample ? 'checked' : ''} onchange="syncField(${index}, 'isSample', this.checked)" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer w-3.5 h-3.5"> 樣品</label>
+                    <div class="mb-3 space-y-2">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">品項名稱 #${index + 1}</label>
+                            <input type="text" id="mob-name-${index}" value="${item.name}" oninput="syncField(${index}, 'name', this.value)" placeholder="輸入商品描述..." class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50" ${isLast && index===0 ? 'required' : ''}>
+                        </div>
+                        <div class="flex gap-2">
+                            <input type="text" id="mob-code-${index}" value="${item.code || ''}" oninput="syncField(${index}, 'code', this.value)" placeholder="商品編號(選)" class="w-1/3 rounded-lg border border-slate-200 px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/50 font-mono bg-slate-50">
+                            <div class="flex gap-3 px-1 items-center">
+                                <label class="flex items-center gap-1.5 text-[11px] cursor-pointer text-slate-600 font-bold"><input type="checkbox" id="mob-retention-${index}" ${item.isRetention ? 'checked' : ''} onchange="syncField(${index}, 'isRetention', this.checked)" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer w-3.5 h-3.5"> 鎖貨</label>
+                                <label class="flex items-center gap-1.5 text-[11px] cursor-pointer text-slate-600 font-bold"><input type="checkbox" id="mob-sample-${index}" ${item.isSample ? 'checked' : ''} onchange="syncField(${index}, 'isSample', this.checked)" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer w-3.5 h-3.5"> 樣品</label>
+                            </div>
                         </div>
                     </div>
                     <div class="flex gap-3">
@@ -1759,8 +1763,11 @@
             // 備份當前已被選取的表單值以防止異步更新覆寫
             const curCustomer = document.getElementById("customerName").value;
             const curSalesRep = document.getElementById("salesRep").value;
-            const curInvoice = document.getElementById("invoiceMethod").value;
             const curDelivery = document.getElementById("deliveryMethod").value;
+            
+            // Modal內的發票欄位
+            const modalInvSelect = document.getElementById("modal-invoice-input");
+            const curInvoice = modalInvSelect ? modalInvSelect.value : "";
 
             // 客戶
             const cusSelect = document.getElementById("customerName");
@@ -1807,13 +1814,20 @@
                 `;
             });
 
-            // 發票方式
-            const invSelect = document.getElementById("invoiceMethod");
-            invSelect.innerHTML = `<option value="" disabled selected>請選擇</option>`;
+            // 發票方式 (填入 Modal 內的 Select)
+            if (modalInvSelect) {
+                modalInvSelect.innerHTML = `<option value="" disabled selected>請選擇發票開立方式...</option>`;
+                window.basisData.invoiceMethods.forEach(i => {
+                    modalInvSelect.innerHTML += `<option value="${i.name}">${i.name}</option>`;
+                });
+                if (curInvoice && Array.from(modalInvSelect.options).some(o => o.value === curInvoice)) {
+                    modalInvSelect.value = curInvoice;
+                }
+            }
+
             const setInvList = document.getElementById("settings-invoicemethods-list");
             setInvList.innerHTML = "";
             window.basisData.invoiceMethods.forEach(i => {
-                invSelect.innerHTML += `<option value="${i.name}">${i.name}</option>`;
                 setInvList.innerHTML += `
                     <li class="flex justify-between items-center py-2 px-3 bg-white border border-slate-100 rounded-lg shadow-sm">
                         <span class="text-sm font-medium text-slate-700">${i.name}</span>
@@ -1827,7 +1841,7 @@
 
             // 出貨方式
             const delSelect = document.getElementById("deliveryMethod");
-            delSelect.innerHTML = `<option value="" disabled selected>請選擇</option>`;
+            delSelect.innerHTML = `<option value="" disabled selected>請選擇出貨方式</option>`;
             const setDelList = document.getElementById("settings-deliverymethods-list");
             setDelList.innerHTML = "";
             window.basisData.deliveryMethods.forEach(d => {
@@ -1856,13 +1870,6 @@
             } else if (window.editingOrderId) {
                 const activeOrder = window.ordersData.find(x => x.id === window.editingOrderId);
                 if (activeOrder && activeOrder.salesRepId) repSelect.value = activeOrder.salesRepId;
-            }
-
-            if (curInvoice && Array.from(invSelect.options).some(o => o.value === curInvoice)) {
-                invSelect.value = curInvoice;
-            } else if (window.editingOrderId) {
-                const activeOrder = window.ordersData.find(x => x.id === window.editingOrderId);
-                if (activeOrder && activeOrder.invoiceMethod) invSelect.value = activeOrder.invoiceMethod;
             }
 
             if (curDelivery && Array.from(delSelect.options).some(o => o.value === curDelivery)) {
@@ -2014,6 +2021,9 @@
             const rawTotal = parseFloat(document.getElementById("display-raw-total").innerText.replace(/,/g, ''));
             const grandTotal = parseFloat(document.getElementById("display-grand-total").innerText.replace(/,/g, ''));
 
+            // 發票開立方式留空，由業助後台填寫 (除了修改既有訂單可能已填過外，新單預設為空)
+            const existingInvoiceMethod = window.editingOrderId ? (window.ordersData.find(x => x.id === window.editingOrderId)?.invoiceMethod || "") : "";
+
             const payload = {
                 docNo: docNo || "",
                 refQuotationNo: refQuotationNo || "",
@@ -2024,7 +2034,7 @@
                 salesRepCode: salesRepCode || "", // 保存業務編號
                 salesRep: salesRepName || "", 
                 email: document.getElementById("email").value || "",
-                invoiceMethod: document.getElementById("invoiceMethod").value || "",
+                invoiceMethod: existingInvoiceMethod, 
                 deliveryMethod: document.getElementById("deliveryMethod").value || "",
                 items: validItems,
                 overallNotes: document.getElementById("overallNotes").value || "",
@@ -2383,9 +2393,28 @@
             document.getElementById("modal-customer").innerHTML = customerDisplay;
             
             document.getElementById("modal-email").innerText = order.email || "未提供";
-            document.getElementById("modal-invoice-method").innerText = order.invoiceMethod || "未提供";
             document.getElementById("modal-delivery-method").innerText = order.deliveryMethod || "未提供";
             document.getElementById("modal-notes").innerText = order.overallNotes || "無備註說明";
+
+            // 發票顯示邏輯處理
+            const invDisplay = document.getElementById("modal-invoice-method");
+            if (order.invoiceMethod) {
+                invDisplay.innerText = order.invoiceMethod;
+                invDisplay.className = "font-medium text-slate-800";
+            } else {
+                invDisplay.innerText = "尚未填寫 (待銷貨時確認)";
+                invDisplay.className = "font-medium px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 text-[11px]";
+            }
+
+            // 預載 Modal 內的發票選單值
+            const modalInvSelect = document.getElementById("modal-invoice-input");
+            if (modalInvSelect) {
+                if (order.invoiceMethod && Array.from(modalInvSelect.options).some(o => o.value === order.invoiceMethod)) {
+                    modalInvSelect.value = order.invoiceMethod;
+                } else {
+                    modalInvSelect.value = ""; 
+                }
+            }
 
             // 處理單據前後關聯追溯
             const relationContainer = document.getElementById("modal-relation-container");
@@ -2468,7 +2497,7 @@
                     `;
                     approveArea.classList.remove("hidden");
                 } else {
-                    statusEl.innerHTML = `<span class="text-amber-600 font-bold">等待助理完成銷貨登錄</span>`;
+                    statusEl.innerHTML = `<span class="text-amber-600 font-bold">等待助理完成銷貨登錄與確認發票</span>`;
                     backfillArea.classList.remove("hidden");
                     document.getElementById("assistant-invoice-input").value = "";
                 }
@@ -2478,15 +2507,18 @@
             tbody.innerHTML = "";
             (order.items || []).forEach(item => {
                 let flagsHtml = "";
-                if (item.isRetention) flagsHtml += `<span class="inline-block ml-1.5 text-[10px] bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded font-bold">扣保留</span>`;
-                if (item.isSample) flagsHtml += `<span class="inline-block ml-1.5 text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold">樣品</span>`;
+                if (item.isRetention) flagsHtml += `<span class="inline-block ml-1.5 text-[10px] bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded font-bold border border-rose-200">鎖貨</span>`;
+                if (item.isSample) flagsHtml += `<span class="inline-block ml-1.5 text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold border border-amber-200">樣品</span>`;
                 
+                const codeHtml = item.code ? `<span class="font-mono text-xs text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">${item.code}</span>` : `<span class="text-[10px] text-slate-300">-</span>`;
+
                 tbody.innerHTML += `
                     <tr>
-                        <td class="py-2 px-4 text-slate-700 font-medium">${escapeHtml(item.name)}${flagsHtml}</td>
-                        <td class="py-2 px-4 text-right font-mono">${item.qty}</td>
-                        <td class="py-2 px-4 text-right font-mono text-slate-500">$${(item.price || 0).toLocaleString()}</td>
-                        <td class="py-2 px-4 text-right font-mono font-bold text-slate-700">$${(item.subtotal || 0).toLocaleString()}</td>
+                        <td class="py-2 px-4 align-middle">${codeHtml}</td>
+                        <td class="py-2 px-4 text-slate-700 font-medium align-middle">${escapeHtml(item.name)}${flagsHtml}</td>
+                        <td class="py-2 px-4 text-right font-mono align-middle">${item.qty}</td>
+                        <td class="py-2 px-4 text-right font-mono text-slate-500 align-middle">$${(item.price || 0).toLocaleString()}</td>
+                        <td class="py-2 px-4 text-right font-mono font-bold text-slate-700 align-middle">$${(item.subtotal || 0).toLocaleString()}</td>
                     </tr>
                 `;
             });
@@ -2537,7 +2569,13 @@
             event.preventDefault();
             const orderId = document.getElementById("modal-hidden-order-id").value;
             const slipNo = document.getElementById("assistant-invoice-input").value.trim();
+            const invoiceMethod = document.getElementById("modal-invoice-input").value;
+
             if (!slipNo) return;
+            if (!invoiceMethod) {
+                showCustomMessage("請選擇發票開立方式！", "error");
+                return;
+            }
 
             const currentData = window.ordersData || [];
             const order = currentData.find(x => x.id === orderId);
@@ -2547,11 +2585,13 @@
                 const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'orders', orderId);
                 await updateDoc(docRef, {
                     salesSlipNo: slipNo,
+                    invoiceMethod: invoiceMethod,
                     status: 'Invoiced',
                     updatedAt: new Date().toISOString()
                 });
             } else {
                 order.salesSlipNo = slipNo;
+                order.invoiceMethod = invoiceMethod;
                 order.status = 'Invoiced';
                 order.updatedAt = new Date().toISOString();
                 localStorage.setItem("easyorder_orders", JSON.stringify(window.ordersData));
@@ -2559,7 +2599,7 @@
                 if (typeof window.renderOrderList === 'function') window.renderOrderList();
             }
 
-            showCustomMessage(`✅ 已成功將單據綁定銷貨單號，並轉交業務覆核！`);
+            showCustomMessage(`✅ 已成功將單據綁定銷貨單號與發票方式，並轉交業務覆核！`);
             viewOrderDetails(orderId); 
         }
         
@@ -2701,7 +2741,7 @@
                 const cleanSalesCode = `"${(order.salesRepCode || "").replace(/"/g, '""')}"`;
                 const cleanSales = `"${(order.salesRep || "").replace(/"/g, '""')}"`;
                 const cleanEmail = `"${(order.email || "").replace(/"/g, '""')}"`;
-                const cleanMethod = `"${(order.invoiceMethod || "").replace(/"/g, '""')}"`;
+                const cleanMethod = `"${(order.invoiceMethod || "未填寫").replace(/"/g, '""')}"`;
                 const cleanDelivery = `"${(order.deliveryMethod || "").replace(/"/g, '""')}"`;
                 const discountStr = order.discountRate ? order.discountRate + "%" : "100%";
                 const cleanReason = `"${(order.discountReason || "").replace(/"/g, '""')}"`;
@@ -2709,10 +2749,11 @@
                 
                 let itemsStr = (order.items || []).map(i => {
                     let flags = [];
-                    if (i.isRetention) flags.push('扣保留');
+                    if (i.isRetention) flags.push('鎖貨');
                     if (i.isSample) flags.push('樣品');
                     let flagStr = flags.length > 0 ? `(${flags.join(',')})` : '';
-                    return `${i.name}${flagStr}*${i.qty}`;
+                    let codeStr = i.code ? `[${i.code}] ` : '';
+                    return `${codeStr}${i.name}${flagStr}*${i.qty}`;
                 }).join(" / ");
                 
                 const cleanItems = `"${itemsStr.replace(/"/g, '""')}"`;
