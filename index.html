@@ -631,19 +631,29 @@
                             
                             <!-- 助理回填銷貨單號區 (僅當訂單狀態時顯示) -->
                             <div id="assistant-invoice-area" class="mt-2 hidden">
-                                <form onsubmit="submitInvoiceNo(event)" class="flex flex-col gap-2">
+                                <form onsubmit="submitInvoiceNo(event)" class="flex flex-col gap-3">
                                     <input type="hidden" id="modal-hidden-order-id">
-                                    <div class="flex items-center justify-between gap-2">
-                                        <label class="text-[11px] font-bold text-indigo-700 whitespace-nowrap">確認發票方式:</label>
+                                    
+                                    <!-- 發票開立方式 -->
+                                    <div class="flex items-center gap-2">
+                                        <label class="text-[11px] font-bold text-indigo-700 whitespace-nowrap w-24">發票開立方式：</label>
                                         <select id="modal-invoice-input" required class="flex-grow rounded-lg border border-indigo-200 bg-indigo-50/50 px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
-                                            <option value="" disabled selected>請選擇發票開立方式...</option>
+                                            <option value="" disabled selected>請選擇開立方式...</option>
                                             <!-- JS動態載入 -->
                                         </select>
                                     </div>
-                                    <div class="flex flex-col sm:flex-row gap-2">
-                                        <input type="text" id="assistant-invoice-input" placeholder="輸入ERP銷貨單號回填..." required class="w-full sm:w-1/2 rounded-lg border border-indigo-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
-                                        <input type="text" id="assistant-invoice-no-input" placeholder="開立發票號碼(選填)" class="w-full sm:w-1/4 rounded-lg border border-indigo-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 font-mono">
-                                        <button type="submit" class="w-full sm:w-1/4 px-4 py-2 bg-indigo-600 text-white font-bold text-sm rounded-lg hover:bg-indigo-700 transition-colors whitespace-nowrap shadow-sm cursor-pointer">
+                                    
+                                    <!-- 發票號碼 -->
+                                    <div class="flex items-center gap-2">
+                                        <label class="text-[11px] font-bold text-indigo-700 whitespace-nowrap w-24">發票號碼：</label>
+                                        <input type="text" id="assistant-invoice-no-input" placeholder="選填..." class="flex-grow rounded-lg border border-indigo-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 font-mono">
+                                    </div>
+
+                                    <!-- 銷貨單號 -->
+                                    <div class="flex items-center gap-2">
+                                        <label class="text-[11px] font-bold text-indigo-700 whitespace-nowrap w-24">銷貨單號：</label>
+                                        <input type="text" id="assistant-invoice-input" placeholder="必填..." required class="flex-grow rounded-lg border border-indigo-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
+                                        <button type="submit" class="px-4 py-1.5 bg-indigo-600 text-white font-bold text-sm rounded-lg hover:bg-indigo-700 transition-colors shadow-sm cursor-pointer whitespace-nowrap">
                                             轉銷貨登錄
                                         </button>
                                     </div>
