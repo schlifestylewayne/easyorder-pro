@@ -642,7 +642,10 @@
                                     </div>
                                     <div class="flex gap-2">
                                         <input type="text" id="assistant-invoice-input" placeholder="輸入ERP銷貨單號回填..." required class="flex-grow rounded-lg border border-indigo-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
-                                        <button type="submit" class="px-4 py-2 bg-indigo-600 text-white font-bold text-sm rounded-lg hover:bg-indigo-700 transition-colors whitespace-nowrap shadow-sm cursor-pointer">
+                                        <input type="text" id="assistant-invoice-number" placeholder="發票號碼(選填)" class="w-1/3 rounded-lg border border-indigo-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 font-mono">
+                                    </div>
+                                    <div class="flex justify-end mt-1">
+                                        <button type="submit" class="px-4 py-2 bg-indigo-600 text-white font-bold text-sm rounded-lg hover:bg-indigo-700 transition-colors whitespace-nowrap shadow-sm cursor-pointer w-full">
                                             轉銷貨登錄
                                         </button>
                                     </div>
@@ -2466,6 +2469,7 @@
                             </div>
                             <div class="grid grid-cols-1 gap-1 text-xs text-slate-700 pt-1.5 border-t border-indigo-100">
                                 <div><span class="text-slate-400 font-bold">銷貨單號：</span><span class="font-mono text-slate-800 font-bold bg-white px-1.5 py-0.5 rounded border border-indigo-100 shadow-sm">${order.salesSlipNo || '未填寫'}</span></div>
+                                <div><span class="text-slate-400 font-bold">發票號碼：</span><span class="font-mono text-slate-800 font-bold">${order.invoiceNumber || '未填寫'}</span></div>
                                 <div><span class="text-slate-400 font-bold">出貨時間：</span><span class="text-slate-800 font-medium">${order.shippingDate || '未記錄'}</span></div>
                                 <div><span class="text-slate-400 font-bold">出貨方式：</span><span class="text-indigo-700 font-bold bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100">${order.deliveryMethod || '未填寫'}</span></div>
                             </div>
@@ -2476,6 +2480,7 @@
                         <div class="space-y-2 bg-emerald-50/50 p-2.5 rounded-xl border border-emerald-100">
                             <span class="text-emerald-700 font-bold block text-xs"><i class="fa-solid fa-box-open"></i> 業務已覆核（倉庫備貨中）</span>
                             <span class="text-slate-600 text-xs block">ERP 銷貨單號: <span class="font-mono text-emerald-800 font-bold text-sm bg-emerald-100 px-1.5 py-0.5 rounded">${order.salesSlipNo}</span></span>
+                            ${order.invoiceNumber ? `<span class="text-slate-500 text-xs block mt-1">發票號碼: <span class="font-mono text-slate-700">${order.invoiceNumber}</span></span>` : ''}
                             <div class="pt-2 border-t border-emerald-200/60 mt-2 text-right">
                                 <button onclick="window.revertPreparingToInvoiced('${order.id}')" class="text-rose-500 hover:text-rose-700 text-[11px] font-bold cursor-pointer transition-colors"><i class="fa-solid fa-rotate-left"></i> 退回上一步 (待業務覆核)</button>
                             </div>
@@ -2488,8 +2493,9 @@
                             <span class="text-sky-700 font-bold block text-xs">已登錄銷貨單（等待業務覆核）</span>
                             <div class="flex items-center justify-between mt-1">
                                 <span class="text-slate-600 text-xs block">ERP 銷貨單號: <span class="font-mono text-sky-800 font-bold text-sm bg-sky-100 px-1.5 py-0.5 rounded">${order.salesSlipNo}</span></span>
-                                <button onclick="window.enableEditSalesSlipNo('${order.salesSlipNo}')" class="text-sky-600 hover:text-sky-800 text-[11px] font-bold cursor-pointer bg-sky-100/50 px-2 py-1 rounded transition-colors"><i class="fa-solid fa-pen"></i> 修改</button>
+                                <button onclick="window.enableEditSalesSlipNo('${order.salesSlipNo}', '${order.invoiceNumber || ''}')" class="text-sky-600 hover:text-sky-800 text-[11px] font-bold cursor-pointer bg-sky-100/50 px-2 py-1 rounded transition-colors"><i class="fa-solid fa-pen"></i> 修改</button>
                             </div>
+                            ${order.invoiceNumber ? `<span class="text-slate-500 text-[11px] block mt-1">發票號碼: <span class="font-mono">${order.invoiceNumber}</span></span>` : ''}
                             <div class="pt-2 border-t border-sky-200/60 mt-2 text-right">
                                 <button onclick="window.revertToPendingInvoice('${order.id}')" class="text-rose-500 hover:text-rose-700 text-[11px] font-bold cursor-pointer transition-colors"><i class="fa-solid fa-rotate-left"></i> 退回待轉銷貨單</button>
                             </div>
@@ -2500,6 +2506,7 @@
                     statusEl.innerHTML = `<span class="text-amber-600 font-bold">等待助理完成銷貨登錄與確認發票</span>`;
                     backfillArea.classList.remove("hidden");
                     document.getElementById("assistant-invoice-input").value = "";
+                    document.getElementById("assistant-invoice-number").value = "";
                 }
             }
 
@@ -2531,14 +2538,17 @@
             openModal('order-modal');
         }
 
-        window.enableEditSalesSlipNo = function(currentNo) {
+        window.enableEditSalesSlipNo = function(currentNo, currentInvoiceNo) {
             document.getElementById("assistant-invoice-area").classList.remove("hidden");
             const input = document.getElementById("assistant-invoice-input");
+            const invoiceInput = document.getElementById("assistant-invoice-number");
             input.value = currentNo;
+            invoiceInput.value = currentInvoiceNo || "";
             input.focus();
             document.getElementById("sales-approve-area").classList.add("hidden");
         };
 
+        window.revertToPendingInvoice = function(orderId) {
         window.revertToPendingInvoice = function(orderId) {
             window.showConfirm(
                 "退回待轉銷貨單",
@@ -2546,11 +2556,12 @@
                 async () => {
                     if (window.dbStatus === "firebase" && window.db && currentUser) {
                         const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'orders', orderId);
-                        await updateDoc(docRef, { salesSlipNo: "", status: "Order", updatedAt: new Date().toISOString() });
+                        await updateDoc(docRef, { salesSlipNo: "", invoiceNumber: "", status: "Order", updatedAt: new Date().toISOString() });
                     } else {
                         const order = window.ordersData.find(x => x.id === orderId);
                         if (order) {
                             order.salesSlipNo = "";
+                            order.invoiceNumber = "";
                             order.status = "Order";
                             order.updatedAt = new Date().toISOString();
                             localStorage.setItem("easyorder_orders", JSON.stringify(window.ordersData));
@@ -2570,6 +2581,7 @@
             const orderId = document.getElementById("modal-hidden-order-id").value;
             const slipNo = document.getElementById("assistant-invoice-input").value.trim();
             const invoiceMethod = document.getElementById("modal-invoice-input").value;
+            const invoiceNumber = document.getElementById("assistant-invoice-number").value.trim();
 
             if (!slipNo) return;
             if (!invoiceMethod) {
@@ -2586,12 +2598,14 @@
                 await updateDoc(docRef, {
                     salesSlipNo: slipNo,
                     invoiceMethod: invoiceMethod,
+                    invoiceNumber: invoiceNumber,
                     status: 'Invoiced',
                     updatedAt: new Date().toISOString()
                 });
             } else {
                 order.salesSlipNo = slipNo;
                 order.invoiceMethod = invoiceMethod;
+                order.invoiceNumber = invoiceNumber;
                 order.status = 'Invoiced';
                 order.updatedAt = new Date().toISOString();
                 localStorage.setItem("easyorder_orders", JSON.stringify(window.ordersData));
@@ -2727,7 +2741,7 @@
             }
 
             let csv = "\uFEFF"; 
-            csv += "單據號碼,原報價單號,單據日期,單據類型,客戶編號,客戶名稱,業務編號,負責業務,電子信箱,發票開立方式,出貨方式,預定出貨日,實際出貨日,套用折數,折讓原因,大計含稅金額,銷貨單號,品項明細\n";
+            csv += "單據號碼,原報價單號,單據日期,單據類型,客戶編號,客戶名稱,業務編號,負責業務,電子信箱,發票開立方式,發票號碼,出貨方式,預定出貨日,實際出貨日,套用折數,折讓原因,大計含稅金額,銷貨單號,品項明細\n";
 
             data.forEach(rawOrder => {
                 const order = window.resolveOrderData(rawOrder);
@@ -2742,6 +2756,7 @@
                 const cleanSales = `"${(order.salesRep || "").replace(/"/g, '""')}"`;
                 const cleanEmail = `"${(order.email || "").replace(/"/g, '""')}"`;
                 const cleanMethod = `"${(order.invoiceMethod || "未填寫").replace(/"/g, '""')}"`;
+                const cleanInvoiceNumber = `"${(order.invoiceNumber || "").replace(/"/g, '""')}"`;
                 const cleanDelivery = `"${(order.deliveryMethod || "").replace(/"/g, '""')}"`;
                 const discountStr = order.discountRate ? order.discountRate + "%" : "100%";
                 const cleanReason = `"${(order.discountReason || "").replace(/"/g, '""')}"`;
@@ -2759,7 +2774,7 @@
                 const cleanItems = `"${itemsStr.replace(/"/g, '""')}"`;
                 const shippingDateStr = order.shippingDate || "未出貨";
 
-                csv += `${cleanDocNo},${cleanRefNo},${dateStr},${order.type === 'Quotation'?'報價單':'訂購單'},${cleanCusCode},${cleanCompany},${cleanSalesCode},${cleanSales},${cleanEmail},${cleanMethod},${cleanDelivery},${order.deliveryDate || ''},${shippingDateStr},${discountStr},${cleanReason},${order.grandTotal},${cleanInvoiceNo},${cleanItems}\n`;
+                csv += `${cleanDocNo},${cleanRefNo},${dateStr},${order.type === 'Quotation'?'報價單':'訂購單'},${cleanCusCode},${cleanCompany},${cleanSalesCode},${cleanSales},${cleanEmail},${cleanMethod},${cleanInvoiceNumber},${cleanDelivery},${order.deliveryDate || ''},${shippingDateStr},${discountStr},${cleanReason},${order.grandTotal},${cleanInvoiceNo},${cleanItems}\n`;
             });
 
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
