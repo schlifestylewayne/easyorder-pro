@@ -218,9 +218,10 @@
                             <thead>
                                 <tr class="bg-white border-b border-slate-200">
                                     <th class="w-12 py-3 px-4 text-center font-bold text-slate-400 text-xs uppercase">#</th>
-                                    <th class="py-3 px-4 font-bold text-slate-600 text-xs uppercase w-2/5">品項名稱 (商品描述) <span class="text-rose-500">*</span></th>
+                                    <th class="py-3 px-4 font-bold text-slate-600 text-xs uppercase">品項名稱 (商品描述) <span class="text-rose-500">*</span></th>
+                                    <th class="w-28 py-3 px-4 font-bold text-slate-600 text-xs uppercase text-center">屬性</th>
                                     <th class="w-24 py-3 px-4 font-bold text-slate-600 text-xs uppercase text-right">數量 <span class="text-rose-500">*</span></th>
-                                    <th class="w-32 py-3 px-4 font-bold text-slate-600 text-xs uppercase text-right">單價(未稅) <span class="text-rose-500">*</span></th>
+                                    <th class="w-32 py-3 px-4 font-bold text-slate-600 text-xs uppercase text-right">單價(含稅) <span class="text-rose-500">*</span></th>
                                     <th class="w-32 py-3 px-4 font-bold text-slate-600 text-xs uppercase text-right">小計</th>
                                     <th class="w-16 py-3 px-4 text-center font-bold text-slate-400 text-xs uppercase">移除</th>
                                 </tr>
@@ -259,7 +260,7 @@
                             
                             <div class="p-6 space-y-5 relative z-10">
                                 <div class="flex justify-between items-center pb-4 border-b border-slate-700/80">
-                                    <span class="text-sm font-medium text-slate-400">原始合計 (未稅)</span>
+                                    <span class="text-sm font-medium text-slate-400">原始合計 (含稅)</span>
                                     <span class="text-xl font-bold font-mono tracking-tight">$<span id="display-raw-total">0</span></span>
                                 </div>
                                 
@@ -272,7 +273,7 @@
                                         </div>
                                     </div>
                                     
-                                    <!-- 折讓原因：改用穩定的 hidden 類別做切換，解決 iPad 兼容問題 -->
+                                    <!-- 折讓原因 -->
                                     <div id="discount-reason-container" class="hidden mt-3 pt-3 border-t border-slate-700/50">
                                         <label class="block text-xs font-bold text-rose-300 mb-1"><i class="fa-solid fa-circle-exclamation"></i> 特殊折讓原因 (必填)</label>
                                         <input type="text" id="discountReason" placeholder="請簡述為何提供折扣..." class="w-full rounded-lg border border-rose-500/50 bg-rose-950/30 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-rose-500 transition-colors placeholder-rose-300/50">
@@ -280,9 +281,9 @@
                                 </div>
 
                                 <div class="flex justify-between items-end pt-2">
-                                    <span class="text-sm font-bold text-indigo-300 uppercase tracking-wider">本單應收大計</span>
+                                    <span class="text-sm font-bold text-indigo-300 uppercase tracking-wider">應收大計 (含稅)</span>
                                     <div class="text-right">
-                                        <span class="block text-xs text-slate-400 mb-1">未含稅金 (TWD)</span>
+                                        <span class="block text-xs text-slate-400 mb-1">含稅總計 (TWD)</span>
                                         <span class="text-4xl font-extrabold font-mono tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-indigo-200 via-white to-indigo-100">$<span id="display-grand-total">0</span></span>
                                     </div>
                                 </div>
@@ -299,7 +300,7 @@
                     <button type="button" onclick="setSubmitTypeAndSubmit('Order')" class="px-8 py-3.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-200 transition-all flex items-center justify-center gap-2 shadow-md shadow-indigo-200 order-1 sm:order-2 cursor-pointer">
                         <i class="fa-solid fa-check-double"></i> <span id="btn-order-text">確認送出 (成立訂購單)</span>
                     </button>
-                    <!-- 隱藏的實際提交按鈕 (為了觸發 HTML5 驗證) -->
+                    <!-- 隱藏的實際提交按鈕 -->
                     <button type="submit" id="hidden-submit-btn" class="hidden"></button>
                 </div>
             </form>
@@ -418,56 +419,65 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 
-                <!-- ☁️ 雲端同步與多台電腦連線設定面板 (重要新增) -->
-                <div class="bg-white rounded-2xl shadow-sm border border-indigo-200 overflow-hidden col-span-1 md:col-span-2 p-6 space-y-4">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-3 gap-2">
+                <!-- ☁️ 雲端同步與多台電腦連線設定面板 (點擊收合防護) -->
+                <div class="bg-white rounded-2xl shadow-sm border border-indigo-200 overflow-hidden col-span-1 md:col-span-2 p-0">
+                    <!-- 收合觸發區 (Header) -->
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-6 border-b border-slate-100 gap-2 cursor-pointer hover:bg-slate-50 transition-colors" onclick="window.toggleCloudConfig()">
                         <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
                             <i class="fa-solid fa-cloud text-indigo-600 animate-pulse"></i> 多裝置雲端同步與資料庫設定
                         </h3>
-                        <span id="cloud-badge" class="px-2.5 py-1 text-xs font-bold rounded-full bg-slate-100 text-slate-500">
-                            偵測連線狀態中...
-                        </span>
+                        <div class="flex items-center gap-3">
+                            <span id="cloud-badge" class="px-2.5 py-1 text-xs font-bold rounded-full bg-slate-100 text-slate-500">
+                                偵測連線狀態中...
+                            </span>
+                            <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-500">
+                                <i id="cloud-config-chevron" class="fa-solid fa-chevron-down transition-transform duration-300"></i>
+                            </div>
+                        </div>
                     </div>
                     
-                    <p class="text-xs text-slate-500 leading-relaxed">
-                        本系統內建「Google Firebase Firestore」即時雲端同步。您只需建立一個免費的 Firebase 專案並填入下方配置，即可在**多台電腦、平板、手機**上同步操作，所有單據、報價、基礎設定都將**即時秒級更新**。
-                    </p>
+                    <!-- 隱藏的設定內容區 (Body) -->
+                    <div id="cloud-config-container" class="hidden p-6 space-y-4 bg-slate-50/50">
+                        <p class="text-xs text-slate-500 leading-relaxed">
+                            本系統內建「Google Firebase Firestore」即時雲端同步。您只需建立一個免費的 Firebase 專案並填入下方配置，即可在**多台電腦、平板、手機**上同步操作，所有單據、報價、基礎設定都將**即時秒級更新**。
+                        </p>
 
-                    <form id="cloud-config-form" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
-                        <div class="space-y-1">
-                            <label class="block font-bold text-slate-600">自訂應用程式識別號 (App ID / 專案名)</label>
-                            <input type="text" id="cloud-app-id" placeholder="例如: easyorder-pro-sales" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-500/50 focus:outline-none">
-                        </div>
-                        <div class="space-y-1">
-                            <label class="block font-bold text-slate-600">API Key (apiKey)</label>
-                            <input type="password" id="cloud-apiKey" placeholder="AIzaSy..." class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-500/50 focus:outline-none">
-                        </div>
-                        <div class="space-y-1">
-                            <label class="block font-bold text-slate-600">驗證網域 (authDomain)</label>
-                            <input type="text" id="cloud-authDomain" placeholder="xxx.firebaseapp.com" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-500/50 focus:outline-none">
-                        </div>
-                        <div class="space-y-1">
-                            <label class="block font-bold text-slate-600">專案ID (projectId)</label>
-                            <input type="text" id="cloud-projectId" placeholder="my-project-id" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-500/50 focus:outline-none">
-                        </div>
-                        <div class="space-y-1">
-                            <label class="block font-bold text-slate-600">儲存貯體 (storageBucket)</label>
-                            <input type="text" id="cloud-storageBucket" placeholder="xxx.appspot.com" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-500/50 focus:outline-none">
-                        </div>
-                        <div class="space-y-1">
-                            <label class="block font-bold text-slate-600">應用程式ID (appId)</label>
-                            <input type="text" id="cloud-firebaseAppId" placeholder="1:123456:web:abcd" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-500/50 focus:outline-none">
-                        </div>
+                        <form id="cloud-config-form" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
+                            <div class="space-y-1">
+                                <label class="block font-bold text-slate-600">自訂應用程式識別號 (App ID / 專案名)</label>
+                                <input type="text" id="cloud-app-id" placeholder="例如: easyorder-pro-sales" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-500/50 focus:outline-none">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="block font-bold text-slate-600">API Key (apiKey)</label>
+                                <input type="password" id="cloud-apiKey" placeholder="AIzaSy..." class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-500/50 focus:outline-none">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="block font-bold text-slate-600">驗證網域 (authDomain)</label>
+                                <input type="text" id="cloud-authDomain" placeholder="xxx.firebaseapp.com" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-500/50 focus:outline-none">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="block font-bold text-slate-600">專案ID (projectId)</label>
+                                <input type="text" id="cloud-projectId" placeholder="my-project-id" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-500/50 focus:outline-none">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="block font-bold text-slate-600">儲存貯體 (storageBucket)</label>
+                                <input type="text" id="cloud-storageBucket" placeholder="xxx.appspot.com" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-500/50 focus:outline-none">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="block font-bold text-slate-600">應用程式ID (appId)</label>
+                                <input type="text" id="cloud-firebaseAppId" placeholder="1:123456:web:abcd" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-500/50 focus:outline-none">
+                            </div>
 
-                        <div class="col-span-1 sm:col-span-2 lg:col-span-3 flex flex-col sm:flex-row justify-between items-center pt-2 gap-3">
-                            <button type="button" onclick="window.clearCloudConfig()" class="text-rose-600 hover:text-rose-800 font-bold transition-colors text-xs order-2 sm:order-1">
-                                <i class="fa-solid fa-trash-can mr-1"></i> 中斷雲端連線 (回復為單機)
-                            </button>
-                            <button type="button" onclick="window.saveCustomCloudConfig()" class="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer text-xs order-1 sm:order-2">
-                                <i class="fa-solid fa-cloud-arrow-up"></i> 測試並啟用雲端同步
-                            </button>
-                        </div>
-                    </form>
+                            <div class="col-span-1 sm:col-span-2 lg:col-span-3 flex flex-col sm:flex-row justify-between items-center pt-2 gap-3">
+                                <button type="button" onclick="window.clearCloudConfig()" class="text-rose-600 hover:text-rose-800 font-bold transition-colors text-xs order-2 sm:order-1">
+                                    <i class="fa-solid fa-trash-can mr-1"></i> 中斷雲端連線 (回復為單機)
+                                </button>
+                                <button type="button" onclick="window.saveCustomCloudConfig()" class="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer text-xs order-1 sm:order-2">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i> 測試並啟用雲端同步
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
 
                 <!-- 客戶名單管理 -->
@@ -673,7 +683,7 @@
                             </tbody>
                             <tfoot class="bg-slate-50 border-t border-slate-200">
                                 <tr>
-                                    <td colspan="3" class="py-2 px-4 text-right font-medium text-slate-500">原始合計 (未稅)</td>
+                                    <td colspan="3" class="py-2 px-4 text-right font-medium text-slate-500">原始合計 (含稅)</td>
                                     <td class="py-2 px-4 text-right font-bold" id="modal-raw-total"></td>
                                 </tr>
                                 <tr>
@@ -684,7 +694,7 @@
                                     <td colspan="4" class="py-1 px-4 text-right text-xs text-rose-500" id="modal-discount-reason"></td>
                                 </tr>
                                 <tr class="bg-indigo-50">
-                                    <td colspan="3" class="py-3 px-4 text-right font-extrabold text-indigo-800 text-base">應收大計 (未稅)</td>
+                                    <td colspan="3" class="py-3 px-4 text-right font-extrabold text-indigo-800 text-base">應收大計 (含稅)</td>
                                     <td class="py-3 px-4 text-right font-extrabold text-indigo-800 text-lg" id="modal-grand-total"></td>
                                 </tr>
                             </tfoot>
@@ -1335,11 +1345,11 @@
             // 深拷貝商品明細，並確保末行自動延展
             window.orderItems = JSON.parse(JSON.stringify(order.items || []));
             if (window.orderItems.length === 0) {
-                window.orderItems.push({ name: "", qty: "", price: "", subtotal: 0 });
+                window.orderItems.push({ name: "", qty: "", price: "", subtotal: 0, isRetention: false, isSample: false });
             } else {
                 const lastItem = window.orderItems[window.orderItems.length - 1];
                 if (lastItem.name.trim() !== "") {
-                    window.orderItems.push({ name: "", qty: "", price: "", subtotal: 0 });
+                    window.orderItems.push({ name: "", qty: "", price: "", subtotal: 0, isRetention: false, isSample: false });
                 }
             }
             rebuildAllRows(); 
@@ -1582,7 +1592,7 @@
         };
 
         function addNewOrderItemRow(name = "", qty = "", price = "") {
-            window.orderItems.push({ name, qty, price, subtotal: 0 });
+            window.orderItems.push({ name, qty, price, subtotal: 0, isRetention: false, isSample: false });
             rebuildAllRows();
         }
 
@@ -1645,6 +1655,19 @@
         }
 
         function rebuildAllRows() {
+            // 紀錄目前正在輸入的焦點與游標位置，避免重新渲染時跳出欄位
+            const activeEl = document.activeElement;
+            const activeId = activeEl ? activeEl.id : null;
+            let selectionStart = null;
+            let selectionEnd = null;
+            
+            if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) {
+                try {
+                    selectionStart = activeEl.selectionStart;
+                    selectionEnd = activeEl.selectionEnd;
+                } catch(e) {} // 某些 input (如 number) 不支援 selection
+            }
+
             const deskTbody = document.getElementById("desktop-items-tbody");
             const mobList = document.getElementById("mobile-items-list");
             
@@ -1654,18 +1677,25 @@
             window.orderItems.forEach((item, index) => {
                 const isLast = index === window.orderItems.length - 1;
                 
+                // 桌機版結構
                 const tr = document.createElement("tr");
                 tr.className = isLast ? "bg-indigo-50/20" : "hover:bg-slate-50 transition-colors";
                 tr.innerHTML = `
                     <td class="py-2 px-4 text-center text-slate-400 text-xs font-mono">${index + 1}</td>
                     <td class="py-2 px-4">
-                        <input type="text" value="${item.name}" oninput="syncField(${index}, 'name', this.value)" placeholder="${isLast ? '輸入新商品名稱...' : '商品描述'}" class="w-full rounded-lg border-transparent hover:border-slate-300 focus:border-indigo-500/50 px-3 py-1.5 text-sm bg-transparent transition-all" ${isLast && index===0 ? 'required' : ''}>
+                        <input type="text" id="desk-name-${index}" value="${item.name}" oninput="syncField(${index}, 'name', this.value)" placeholder="${isLast ? '輸入新商品名稱...' : '商品描述'}" class="w-full rounded-lg border-transparent hover:border-slate-300 focus:border-indigo-500/50 px-3 py-1.5 text-sm bg-transparent transition-all" ${isLast && index===0 ? 'required' : ''}>
                     </td>
                     <td class="py-2 px-4">
-                        <input type="number" min="1" value="${item.qty}" oninput="syncField(${index}, 'qty', this.value)" placeholder="1" class="w-full rounded-lg border-transparent hover:border-slate-300 focus:border-indigo-500/50 px-3 py-1.5 text-sm bg-transparent text-right transition-all font-mono">
+                        <div class="flex flex-col gap-1.5 items-center justify-center">
+                            <label class="flex items-center gap-1.5 text-[11px] cursor-pointer text-slate-600 font-bold"><input type="checkbox" id="desk-retention-${index}" ${item.isRetention ? 'checked' : ''} onchange="syncField(${index}, 'isRetention', this.checked)" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer w-3.5 h-3.5"> 扣保留</label>
+                            <label class="flex items-center gap-1.5 text-[11px] cursor-pointer text-slate-600 font-bold"><input type="checkbox" id="desk-sample-${index}" ${item.isSample ? 'checked' : ''} onchange="syncField(${index}, 'isSample', this.checked)" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer w-3.5 h-3.5"> 樣品</label>
+                        </div>
                     </td>
                     <td class="py-2 px-4">
-                        <input type="number" min="0" value="${item.price}" oninput="syncField(${index}, 'price', this.value)" placeholder="0" class="w-full rounded-lg border-transparent hover:border-slate-300 focus:border-indigo-500/50 px-3 py-1.5 text-sm bg-transparent text-right transition-all font-mono">
+                        <input type="number" id="desk-qty-${index}" min="1" value="${item.qty}" oninput="syncField(${index}, 'qty', this.value)" placeholder="1" class="w-full rounded-lg border-transparent hover:border-slate-300 focus:border-indigo-500/50 px-3 py-1.5 text-sm bg-transparent text-right transition-all font-mono">
+                    </td>
+                    <td class="py-2 px-4">
+                        <input type="number" id="desk-price-${index}" min="0" value="${item.price}" oninput="syncField(${index}, 'price', this.value)" placeholder="0" class="w-full rounded-lg border-transparent hover:border-slate-300 focus:border-indigo-500/50 px-3 py-1.5 text-sm bg-transparent text-right transition-all font-mono">
                     </td>
                     <td class="py-2 px-4 text-right text-sm font-bold text-slate-700" id="subtotal-desk-${index}">
                         ${item.subtotal > 0 ? '$'+item.subtotal.toLocaleString() : '-'}
@@ -1676,6 +1706,7 @@
                 `;
                 deskTbody.appendChild(tr);
 
+                // 手機版卡片結構
                 const card = document.createElement("div");
                 card.className = "bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative";
                 if(isLast) card.classList.add("border-indigo-300", "shadow-indigo-100");
@@ -1683,16 +1714,20 @@
                     ${(!isLast || window.orderItems.length > 1) ? `<button type="button" onclick="deleteItemRow(${index})" class="absolute top-2 right-2 w-8 h-8 rounded-full text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors flex items-center justify-center cursor-pointer"><i class="fa-solid fa-xmark"></i></button>` : ''}
                     <div class="mb-3">
                         <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">品項名稱 #${index + 1}</label>
-                        <input type="text" value="${item.name}" oninput="syncField(${index}, 'name', this.value)" placeholder="輸入商品描述..." class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50" ${isLast && index===0 ? 'required' : ''}>
+                        <input type="text" id="mob-name-${index}" value="${item.name}" oninput="syncField(${index}, 'name', this.value)" placeholder="輸入商品描述..." class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50" ${isLast && index===0 ? 'required' : ''}>
+                        <div class="flex gap-4 mt-2.5 px-1">
+                            <label class="flex items-center gap-1.5 text-[11px] cursor-pointer text-slate-600 font-bold"><input type="checkbox" id="mob-retention-${index}" ${item.isRetention ? 'checked' : ''} onchange="syncField(${index}, 'isRetention', this.checked)" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer w-3.5 h-3.5"> 扣保留</label>
+                            <label class="flex items-center gap-1.5 text-[11px] cursor-pointer text-slate-600 font-bold"><input type="checkbox" id="mob-sample-${index}" ${item.isSample ? 'checked' : ''} onchange="syncField(${index}, 'isSample', this.checked)" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer w-3.5 h-3.5"> 樣品</label>
+                        </div>
                     </div>
                     <div class="flex gap-3">
                         <div class="w-1/3">
                             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">數量</label>
-                            <input type="number" min="1" value="${item.qty}" oninput="syncField(${index}, 'qty', this.value)" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-center focus:outline-none focus:ring-2 focus:ring-indigo-500/50 font-mono">
+                            <input type="number" id="mob-qty-${index}" min="1" value="${item.qty}" oninput="syncField(${index}, 'qty', this.value)" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-center focus:outline-none focus:ring-2 focus:ring-indigo-500/50 font-mono">
                         </div>
                         <div class="w-2/3">
-                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">單價 (未稅)</label>
-                            <input type="number" min="0" value="${item.price}" oninput="syncField(${index}, 'price', this.value)" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-right focus:outline-none focus:ring-2 focus:ring-indigo-500/50 font-mono">
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">單價 (含稅)</label>
+                            <input type="number" id="mob-price-${index}" min="0" value="${item.price}" oninput="syncField(${index}, 'price', this.value)" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-right focus:outline-none focus:ring-2 focus:ring-indigo-500/50 font-mono">
                         </div>
                     </div>
                     <div class="mt-3 pt-3 border-t border-slate-100 flex justify-between items-center">
@@ -1702,6 +1737,22 @@
                 `;
                 mobList.appendChild(card);
             });
+
+            // 如果原本有停留在哪個輸入框，將焦點還原回去
+            if (activeId) {
+                // 使用極短的 timeout 讓瀏覽器把 DOM 節點重新掛載後再抓取
+                setTimeout(() => {
+                    const newEl = document.getElementById(activeId);
+                    if (newEl) {
+                        newEl.focus();
+                        if (selectionStart !== null && (newEl.type === 'text' || newEl.type === 'search')) {
+                            try {
+                                newEl.setSelectionRange(selectionStart, selectionEnd);
+                            } catch(e) {}
+                        }
+                    }
+                }, 0);
+            }
         }
 
         function renderDropdownsAndSettings() {
@@ -2426,9 +2477,13 @@
             const tbody = document.getElementById("modal-items-tbody");
             tbody.innerHTML = "";
             (order.items || []).forEach(item => {
+                let flagsHtml = "";
+                if (item.isRetention) flagsHtml += `<span class="inline-block ml-1.5 text-[10px] bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded font-bold">扣保留</span>`;
+                if (item.isSample) flagsHtml += `<span class="inline-block ml-1.5 text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold">樣品</span>`;
+                
                 tbody.innerHTML += `
                     <tr>
-                        <td class="py-2 px-4 text-slate-700 font-medium">${escapeHtml(item.name)}</td>
+                        <td class="py-2 px-4 text-slate-700 font-medium">${escapeHtml(item.name)}${flagsHtml}</td>
                         <td class="py-2 px-4 text-right font-mono">${item.qty}</td>
                         <td class="py-2 px-4 text-right font-mono text-slate-500">$${(item.price || 0).toLocaleString()}</td>
                         <td class="py-2 px-4 text-right font-mono font-bold text-slate-700">$${(item.subtotal || 0).toLocaleString()}</td>
@@ -2632,7 +2687,7 @@
             }
 
             let csv = "\uFEFF"; 
-            csv += "單據號碼,原報價單號,單據日期,單據類型,客戶編號,客戶名稱,業務編號,負責業務,電子信箱,發票開立方式,出貨方式,預定出貨日,實際出貨日,套用折數,折讓原因,大計未稅金額,銷貨單號,品項明細\n";
+            csv += "單據號碼,原報價單號,單據日期,單據類型,客戶編號,客戶名稱,業務編號,負責業務,電子信箱,發票開立方式,出貨方式,預定出貨日,實際出貨日,套用折數,折讓原因,大計含稅金額,銷貨單號,品項明細\n";
 
             data.forEach(rawOrder => {
                 const order = window.resolveOrderData(rawOrder);
@@ -2652,9 +2707,15 @@
                 const cleanReason = `"${(order.discountReason || "").replace(/"/g, '""')}"`;
                 const cleanInvoiceNo = order.salesSlipNo || "";
                 
-                let itemsStr = (order.items || []).map(i => `${i.name}*${i.qty}`).join(" / ");
-                const cleanItems = `"${itemsStr.replace(/"/g, '""')}"`;
+                let itemsStr = (order.items || []).map(i => {
+                    let flags = [];
+                    if (i.isRetention) flags.push('扣保留');
+                    if (i.isSample) flags.push('樣品');
+                    let flagStr = flags.length > 0 ? `(${flags.join(',')})` : '';
+                    return `${i.name}${flagStr}*${i.qty}`;
+                }).join(" / ");
                 
+                const cleanItems = `"${itemsStr.replace(/"/g, '""')}"`;
                 const shippingDateStr = order.shippingDate || "未出貨";
 
                 csv += `${cleanDocNo},${cleanRefNo},${dateStr},${order.type === 'Quotation'?'報價單':'訂購單'},${cleanCusCode},${cleanCompany},${cleanSalesCode},${cleanSales},${cleanEmail},${cleanMethod},${cleanDelivery},${order.deliveryDate || ''},${shippingDateStr},${discountStr},${cleanReason},${order.grandTotal},${cleanInvoiceNo},${cleanItems}\n`;
@@ -2674,6 +2735,19 @@
         // ==========================================
         // 儲存與清除自訂雲端設定相關方法
         // ==========================================
+        window.toggleCloudConfig = function() {
+            const container = document.getElementById('cloud-config-container');
+            const chevron = document.getElementById('cloud-config-chevron');
+            
+            if (container.classList.contains('hidden')) {
+                container.classList.remove('hidden');
+                chevron.style.transform = 'rotate(180deg)';
+            } else {
+                container.classList.add('hidden');
+                chevron.style.transform = 'rotate(0deg)';
+            }
+        };
+
         window.saveCustomCloudConfig = function() {
             const appId = document.getElementById("cloud-app-id").value.trim() || 'easy-order-pro-1';
             const apiKey = document.getElementById("cloud-apiKey").value.trim();
@@ -2832,6 +2906,7 @@
         window.loadQuotationForEdit = loadQuotationForEdit;
         window.cancelEditing = cancelEditing;
         window.duplicateOrder = duplicateOrder; 
+        window.toggleCloudConfig = toggleCloudConfig;
 
         window.addEventListener("DOMContentLoaded", () => {
             initItemsForm();
