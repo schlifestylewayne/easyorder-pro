@@ -2159,22 +2159,28 @@
         window.approveOrder = async function(orderId) {
             window.showConfirm(
                 "確認覆核",
-                "確認銷貨單內容無誤並讓該訂單進入「備貨中」狀態嗎？",
+                "確認銷貨單內容無誤並讓該訂單進入「備貨中」狀態嗎？\n(註：此動作會同步將「單號日期」更新為今日，以便準確統計備貨瓶數)",
                 async () => {
+                    const nowISO = new Date().toISOString();
                     if (window.dbStatus === "firebase" && window.db && currentUser) {
                         const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'orders', orderId);
-                        await updateDoc(docRef, { status: 'Preparing', updatedAt: new Date().toISOString() });
+                        await updateDoc(docRef, { 
+                            status: 'Preparing', 
+                            createdAt: nowISO, // 重新寫入單據生效日期為目前時間
+                            updatedAt: nowISO 
+                        });
                     } else {
                         const order = window.ordersData.find(x => x.id === orderId);
                         if (order) {
                             order.status = 'Preparing';
-                            order.updatedAt = new Date().toISOString();
+                            order.createdAt = nowISO; // 重新寫入單據生效日期為目前時間
+                            order.updatedAt = nowISO;
                             localStorage.setItem("easyorder_orders", JSON.stringify(window.ordersData));
                             if (typeof window.updateDashboardStats === 'function') window.updateDashboardStats();
                             if (typeof window.renderOrderList === 'function') window.renderOrderList();
                         }
                     }
-                    showCustomMessage("✅ 已完成覆核，訂單進入備貨狀態！");
+                    showCustomMessage("✅ 已完成覆核，訂單進入備貨狀態！單據日期已更新為今日。");
                     const modal = document.getElementById('order-modal');
                     if (!modal.classList.contains('hidden')) {
                         viewOrderDetails(orderId); // 重新渲染 Modal 以顯示出貨按鈕
