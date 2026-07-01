@@ -380,6 +380,29 @@
                 </div>
             </div>
 
+            <!-- 新增：本週出貨與未出貨動態消長總表 -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 flex flex-col">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                    <div>
+                        <h3 class="font-bold text-slate-800 flex items-center text-lg"><i class="fa-solid fa-chart-area text-indigo-500 mr-2"></i>本週出貨動態消長總表</h3>
+                        <p class="text-xs text-slate-500 mt-1">直觀對比每日的備貨/出貨轉換進度，掌握本週物流吞吐量</p>
+                    </div>
+                    <div class="flex flex-col text-sm font-bold bg-slate-50 px-5 py-3 rounded-xl border border-slate-200 shadow-sm min-w-[220px]">
+                        <div class="text-rose-500 mb-2 border-b border-slate-200/60 pb-2 flex justify-between items-center">
+                            <span><span class="w-3 h-3 rounded-sm bg-rose-400 inline-block mr-1.5 align-middle"></span>本週未出貨</span>
+                            <span class="text-lg font-mono"><span id="stat-week-total-pending">0</span> 瓶</span>
+                        </div>
+                        <div class="text-emerald-600 flex justify-between items-center">
+                            <span><span class="w-3 h-3 rounded-sm bg-emerald-500 inline-block mr-1.5 align-middle"></span>本週已出貨</span>
+                            <span class="text-lg font-mono"><span id="stat-week-total-shipped">0</span> 瓶</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex-grow flex items-end justify-between gap-2 h-48 mt-2" id="stat-stacked-chart">
+                    <!-- JS 生成堆疊長條圖 -->
+                </div>
+            </div>
+
             <!-- 單據列表區塊 -->
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden flex flex-col h-[600px]">
                 <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50">
@@ -2460,6 +2483,7 @@
             let todayQty = 0;
             let tomorrowQty = 0;
             let weekQty = [0, 0, 0, 0, 0, 0, 0];
+            let weekOrdersCount = [0, 0, 0, 0, 0, 0, 0]; // 新增：用來統計單數
 
             // 篩選出未結案出貨的正式訂單
             const pendingOrders = data.filter(x => x.type === 'Order' && x.status !== 'Shipped');
@@ -2489,8 +2513,36 @@
                 const weekIndex = weekDates.indexOf(targetDateStr);
                 if (weekIndex !== -1) {
                     weekQty[weekIndex] += orderTotalQty;
+                    weekOrdersCount[weekIndex] += 1; // 累加該日的待出貨單數
                 }
             });
+
+            // --- 新增：已出貨訂單的數量統計 ---
+            let weekShippedQty = [0, 0, 0, 0, 0, 0, 0];
+            const shippedOrders = data.filter(x => x.type === 'Order' && x.status === 'Shipped');
+
+            shippedOrders.forEach(order => {
+                let targetDateStr = '';
+                // 已出貨的以實際出貨日為準，若無則降級使用預定日或建單日
+                if (order.shippingDate) {
+                    targetDateStr = order.shippingDate.split(' ')[0].replace(/\//g, '-');
+                } else {
+                    targetDateStr = order.deliveryDate || (order.createdAt ? formatDate(new Date(order.createdAt)) : todayStr);
+                }
+
+                let orderTotalQty = 0;
+                (order.items || []).forEach(item => {
+                    orderTotalQty += (parseInt(item.qty) || 0);
+                });
+
+                const weekIndex = weekDates.indexOf(targetDateStr);
+                if (weekIndex !== -1) {
+                    weekShippedQty[weekIndex] += orderTotalQty;
+                }
+            });
+
+            const totalWeekPending = weekQty.reduce((a, b) => a + b, 0);
+            const totalWeekShipped = weekShippedQty.reduce((a, b) => a + b, 0);
 
             // 更新今日明日 UI
             const todaySpan = document.getElementById("stat-date-today");
@@ -2512,17 +2564,28 @@
 
                 weekDates.forEach((dateStr, i) => {
                     const qty = weekQty[i];
+                    const ordersCount = weekOrdersCount[i]; // 取得單數
                     const heightPct = Math.max((qty / maxQty) * 100, 5); // 至少保留 5% 高度
                     const isToday = (dateStr === todayStr);
-                    const barColor = isToday ? 'bg-indigo-500' : 'bg-slate-300';
-                    const textColor = isToday ? 'text-indigo-700 font-extrabold' : 'text-slate-600 font-bold';
+                    
+                    let barColor = isToday ? 'bg-indigo-500' : 'bg-slate-300';
+                    let textColor = isToday ? 'text-indigo-700 font-extrabold' : 'text-slate-600 font-bold';
+
+                    // 超過 100 瓶的警示效果 (下方保持藍色，上方漸層轉為紅色)
+                    if (qty > 100) {
+                        barColor = 'bg-gradient-to-t from-indigo-500 via-rose-400 to-rose-500';
+                        textColor = 'text-rose-600 font-extrabold';
+                    }
                     
                     const [, m, d] = dateStr.split('-');
                     const shortDate = `${parseInt(m)}/${parseInt(d)}`;
 
                     chartContainer.innerHTML += `
                         <div class="flex flex-col items-center flex-1">
-                            <span class="text-xs font-bold mb-1 ${textColor}">${qty}</span>
+                            <div class="text-center mb-1 w-full leading-tight">
+                                <div class="text-[10px] text-slate-500 font-medium">單: ${ordersCount}</div>
+                                <div class="text-[11px] ${textColor}">瓶: ${qty}</div>
+                            </div>
                             <div class="w-full max-w-[40px] bg-slate-100 rounded-t-md flex items-end justify-center h-24 border-b border-slate-200 overflow-hidden">
                                 <div class="w-full ${barColor} rounded-t-md transition-all duration-500 hover:opacity-80" style="height: ${heightPct}%"></div>
                             </div>
@@ -2531,6 +2594,59 @@
                         </div>
                     `;
                 });
+            }
+
+            // 更新本週動態消長堆疊圖 UI
+            const stackedChartContainer = document.getElementById("stat-stacked-chart");
+            if (stackedChartContainer) {
+                stackedChartContainer.innerHTML = '';
+                let maxCombined = 10;
+                for(let i=0; i<7; i++) {
+                    if (weekQty[i] + weekShippedQty[i] > maxCombined) {
+                        maxCombined = weekQty[i] + weekShippedQty[i];
+                    }
+                }
+
+                weekDates.forEach((dateStr, i) => {
+                    const pending = weekQty[i];
+                    const shipped = weekShippedQty[i];
+                    const pendingHeight = (pending / maxCombined) * 100;
+                    const shippedHeight = (shipped / maxCombined) * 100;
+                    const isToday = (dateStr === todayStr);
+                    const [, m, d] = dateStr.split('-');
+                    const shortDate = `${parseInt(m)}/${parseInt(d)}`;
+
+                    stackedChartContainer.innerHTML += `
+                        <div class="flex flex-col items-center flex-1 h-full justify-end">
+                            <!-- 頂部：未出貨數字 -->
+                            <div class="text-[11px] font-extrabold text-rose-500 mb-1 leading-none ${pending === 0 ? 'opacity-30' : ''}" title="未出貨瓶數">${pending}</div>
+                            
+                            <!-- 堆疊柱狀圖容器 -->
+                            <div class="w-full max-w-[48px] bg-slate-50 rounded-t-lg flex flex-col justify-end h-[120px] border-x border-t border-slate-100 overflow-hidden relative group">
+                                <!-- 未出貨柱體 (上方) -->
+                                <div class="w-full bg-rose-400 transition-all duration-500 group-hover:brightness-110 relative" style="height: ${pendingHeight}%" title="週${dayNames[i]} 未出貨: ${pending}瓶">
+                                    <div class="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent"></div>
+                                </div>
+                                <!-- 已出貨柱體 (下方) -->
+                                <div class="w-full bg-emerald-500 transition-all duration-500 group-hover:brightness-110 relative" style="height: ${shippedHeight}%" title="週${dayNames[i]} 已出貨: ${shipped}瓶">
+                                    <div class="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- 底部：已出貨數字 -->
+                            <div class="text-[11px] font-extrabold text-emerald-600 mt-1 leading-none ${shipped === 0 ? 'opacity-30' : ''}" title="已出貨瓶數">${shipped}</div>
+                            
+                            <!-- 日期標籤 -->
+                            <div class="text-[10px] ${isToday ? 'text-indigo-600 font-bold bg-indigo-50 px-1.5 rounded mt-1' : 'text-slate-400 font-medium mt-1'}">週${dayNames[i]}</div>
+                            <div class="text-[9px] text-slate-400">${shortDate}</div>
+                        </div>
+                    `;
+                });
+
+                const tpEl = document.getElementById("stat-week-total-pending");
+                const tsEl = document.getElementById("stat-week-total-shipped");
+                if(tpEl) tpEl.innerText = totalWeekPending.toLocaleString();
+                if(tsEl) tsEl.innerText = totalWeekShipped.toLocaleString();
             }
         }
 
