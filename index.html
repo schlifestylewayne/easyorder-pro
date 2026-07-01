@@ -188,9 +188,14 @@
                             </select>
                         </div>
 
-                        <div class="col-span-1 md:col-span-2 space-y-1">
+                        <div class="space-y-1">
                             <label class="block text-xs font-bold text-slate-600 mb-1">聯絡 Email</label>
                             <input type="email" id="email" class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-colors" placeholder="user@example.com">
+                        </div>
+
+                        <div class="space-y-1">
+                            <label class="block text-xs font-bold text-slate-600 mb-1">預定出貨日 (選填)</label>
+                            <input type="date" id="deliveryDate" class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-colors bg-white">
                         </div>
                     </div>
                 </div>
@@ -345,6 +350,32 @@
                     </div>
                     <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl">
                         <i class="fa-solid fa-sack-dollar"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 新增：待出貨預報區塊 -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <!-- 今日/明日 視窗 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 flex flex-col justify-center">
+                    <h3 class="font-bold text-slate-800 mb-4 flex items-center"><i class="fa-solid fa-calendar-day text-indigo-500 mr-2"></i>今日與明日待出貨預報</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-indigo-50 rounded-xl p-4 text-center border border-indigo-100">
+                            <span class="block text-xs font-bold text-indigo-600 mb-1">今日 (<span id="stat-date-today"></span>)</span>
+                            <span class="block text-3xl font-extrabold text-indigo-800"><span id="stat-qty-today">0</span> <span class="text-sm font-medium text-indigo-500">瓶</span></span>
+                        </div>
+                        <div class="bg-slate-50 rounded-xl p-4 text-center border border-slate-200">
+                            <span class="block text-xs font-bold text-slate-500 mb-1">明日 (<span id="stat-date-tomorrow"></span>)</span>
+                            <span class="block text-3xl font-extrabold text-slate-700"><span id="stat-qty-tomorrow">0</span> <span class="text-sm font-medium text-slate-400">瓶</span></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 本週分日表 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 lg:col-span-2 flex flex-col">
+                    <h3 class="font-bold text-slate-800 mb-4 flex items-center"><i class="fa-solid fa-calendar-week text-indigo-500 mr-2"></i>本週待出貨總瓶數統計表 (星期一為首日)</h3>
+                    <div class="flex-grow flex items-end justify-between gap-2 mt-2" id="stat-week-chart">
+                        <!-- JS 生成長條圖與表格 -->
                     </div>
                 </div>
             </div>
@@ -614,6 +645,7 @@
                         <ul class="space-y-2 text-sm">
                             <li class="flex justify-between items-center"><span class="text-slate-500">電子信箱:</span> <span id="modal-email" class="font-medium"></span></li>
                             <li class="flex justify-between items-center"><span class="text-slate-500">出貨管道:</span> <span id="modal-delivery-method" class="font-medium"></span></li>
+                            <li class="flex justify-between items-center"><span class="text-slate-500">預定出貨日:</span> <span id="modal-delivery-date" class="font-medium text-indigo-600"></span></li>
                             <!-- 發票開立方式改由業助後台填寫後才會有值 -->
                             <li class="flex justify-between items-center"><span class="text-slate-500">發票方式:</span> <span id="modal-invoice-method" class="font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200 text-[11px]">尚未填寫</span></li>
                             <li class="flex justify-between items-center"><span class="text-slate-500">業務備註:</span></li>
@@ -1346,6 +1378,7 @@
 
             document.getElementById("email").value = order.email || "";
             document.getElementById("deliveryMethod").value = order.deliveryMethod || "";
+            document.getElementById("deliveryDate").value = order.deliveryDate || "";
             document.getElementById("overallNotes").value = order.overallNotes || "";
             document.getElementById("discountRate").value = order.discountRate || 100;
             document.getElementById("discountReason").value = order.discountReason || "";
@@ -1437,6 +1470,7 @@
 
             document.getElementById("email").value = order.email || "";
             document.getElementById("deliveryMethod").value = order.deliveryMethod || "";
+            document.getElementById("deliveryDate").value = order.deliveryDate || "";
             document.getElementById("overallNotes").value = order.overallNotes || "";
             document.getElementById("discountRate").value = order.discountRate || 100;
             document.getElementById("discountReason").value = order.discountReason || "";
@@ -2051,6 +2085,7 @@
                 salesRepCode: salesRepCode || "", // 保存業務編號
                 salesRep: salesRepName || "", 
                 email: document.getElementById("email").value || "",
+                deliveryDate: document.getElementById("deliveryDate").value || "",
                 invoiceMethod: existingInvoiceMethod, 
                 invoiceNo: existingInvoiceNo,
                 deliveryMethod: document.getElementById("deliveryMethod").value || "",
@@ -2096,6 +2131,7 @@
 
             document.getElementById("discount-reason-container").classList.add("hidden");
             document.getElementById("discountReason").removeAttribute("required");
+            document.getElementById("deliveryDate").value = "";
 
             document.getElementById("display-raw-total").innerText = "0";
             document.getElementById("display-grand-total").innerText = "0";
@@ -2386,6 +2422,110 @@
             document.getElementById("stat-preparing").innerText = preparing;
             document.getElementById("stat-shipped").innerText = shipped;
             document.getElementById("stat-revenue").innerText = "$" + totalRev.toLocaleString();
+
+            // === 新增：待出貨數量統計邏輯 ===
+            const formatDate = (d) => {
+                const yyyy = d.getFullYear();
+                const mm = String(d.getMonth() + 1).padStart(2, '0');
+                const dd = String(d.getDate()).padStart(2, '0');
+                return `${yyyy}-${mm}-${dd}`;
+            };
+
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+
+            const todayStr = formatDate(today);
+            const tomorrowStr = formatDate(tomorrow);
+
+            // 尋找本週一
+            const dayOfWeek = today.getDay(); // 0 是週日
+            const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+            const monday = new Date(today);
+            monday.setDate(monday.getDate() + diffToMonday);
+
+            const weekDates = [];
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(monday);
+                d.setDate(d.getDate() + i);
+                weekDates.push(formatDate(d));
+            }
+
+            let todayQty = 0;
+            let tomorrowQty = 0;
+            let weekQty = [0, 0, 0, 0, 0, 0, 0];
+
+            // 篩選出未結案出貨的正式訂單
+            const pendingOrders = data.filter(x => x.type === 'Order' && x.status !== 'Shipped');
+
+            pendingOrders.forEach(order => {
+                // 如果沒有指定預定出貨日，退而求其次使用建單日作為排程日
+                let targetDateStr = order.deliveryDate;
+                if (!targetDateStr) {
+                    try {
+                        const createDate = new Date(order.createdAt);
+                        targetDateStr = formatDate(createDate);
+                    } catch(e) {
+                        targetDateStr = todayStr; // fallback
+                    }
+                }
+
+                // 計算該單的總瓶數 (數量)
+                let orderTotalQty = 0;
+                (order.items || []).forEach(item => {
+                    const q = parseInt(item.qty) || 0;
+                    orderTotalQty += q;
+                });
+
+                if (targetDateStr === todayStr) todayQty += orderTotalQty;
+                if (targetDateStr === tomorrowStr) tomorrowQty += orderTotalQty;
+
+                const weekIndex = weekDates.indexOf(targetDateStr);
+                if (weekIndex !== -1) {
+                    weekQty[weekIndex] += orderTotalQty;
+                }
+            });
+
+            // 更新今日明日 UI
+            const todaySpan = document.getElementById("stat-date-today");
+            const tomorrowSpan = document.getElementById("stat-date-tomorrow");
+            const qtyToday = document.getElementById("stat-qty-today");
+            const qtyTomorrow = document.getElementById("stat-qty-tomorrow");
+
+            if (todaySpan) todaySpan.innerText = `${today.getMonth() + 1}/${today.getDate()}`;
+            if (tomorrowSpan) tomorrowSpan.innerText = `${tomorrow.getMonth() + 1}/${tomorrow.getDate()}`;
+            if (qtyToday) qtyToday.innerText = todayQty;
+            if (qtyTomorrow) qtyTomorrow.innerText = tomorrowQty;
+
+            // 更新本週圖表 UI
+            const chartContainer = document.getElementById("stat-week-chart");
+            if (chartContainer) {
+                chartContainer.innerHTML = '';
+                const dayNames = ['一', '二', '三', '四', '五', '六', '日'];
+                const maxQty = Math.max(...weekQty, 10); // 至少以 10 為基底，避免圖表過扁或除零
+
+                weekDates.forEach((dateStr, i) => {
+                    const qty = weekQty[i];
+                    const heightPct = Math.max((qty / maxQty) * 100, 5); // 至少保留 5% 高度
+                    const isToday = (dateStr === todayStr);
+                    const barColor = isToday ? 'bg-indigo-500' : 'bg-slate-300';
+                    const textColor = isToday ? 'text-indigo-700 font-extrabold' : 'text-slate-600 font-bold';
+                    
+                    const [, m, d] = dateStr.split('-');
+                    const shortDate = `${parseInt(m)}/${parseInt(d)}`;
+
+                    chartContainer.innerHTML += `
+                        <div class="flex flex-col items-center flex-1">
+                            <span class="text-xs font-bold mb-1 ${textColor}">${qty}</span>
+                            <div class="w-full max-w-[40px] bg-slate-100 rounded-t-md flex items-end justify-center h-24 border-b border-slate-200 overflow-hidden">
+                                <div class="w-full ${barColor} rounded-t-md transition-all duration-500 hover:opacity-80" style="height: ${heightPct}%"></div>
+                            </div>
+                            <span class="text-[10px] ${isToday ? 'text-indigo-600 font-bold' : 'text-slate-400 font-medium'} mt-2">週${dayNames[i]}</span>
+                            <span class="text-[9px] text-slate-400">${shortDate}</span>
+                        </div>
+                    `;
+                });
+            }
         }
 
         function viewOrderDetails(orderId) {
@@ -2413,6 +2553,7 @@
             
             document.getElementById("modal-email").innerText = order.email || "未提供";
             document.getElementById("modal-delivery-method").innerText = order.deliveryMethod || "未提供";
+            document.getElementById("modal-delivery-date").innerText = order.deliveryDate || "未指定";
             document.getElementById("modal-notes").innerText = order.overallNotes || "無備註說明";
 
             // 發票顯示邏輯處理
