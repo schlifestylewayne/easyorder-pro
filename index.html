@@ -111,7 +111,7 @@
                     <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">建立單據 <span class="text-indigo-600">New Order</span></h1>
                     <p class="text-sm text-slate-500 mt-1">建立報價單或直接產生正式訂購單</p>
                 </div>
-                <!-- 手機版/電腦版 表格視圖切換器 (預覽輔助) -->
+                <!-- 手機版/電腦版 表格視圖切換器 -->
                 <div class="bg-slate-100 p-1 rounded-xl flex border border-slate-200">
                     <button onclick="setFormPreviewMode('desktop')" id="preview-desktop-btn" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-white shadow-sm text-indigo-600 transition-colors cursor-pointer">
                         <i class="fa-solid fa-table"></i> 桌機寬版表格
@@ -160,7 +160,6 @@
                             <select id="customerName" required class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-colors appearance-none bg-white cursor-pointer">
                                 <option value="" disabled selected>請選擇現有客戶 (或選擇手動輸入新客戶)</option>
                                 <option value="__MANUAL__" class="font-bold text-indigo-600">➕ 手動輸入新客戶...</option>
-                                <!-- JS動態載入 -->
                             </select>
                             <div id="manual-customer-container" class="hidden mt-3 animate-in fade-in slide-in-from-top-2">
                                 <div class="flex gap-2">
@@ -176,7 +175,6 @@
                             <label class="block text-xs font-bold text-slate-600 mb-1">負責業務 <span class="text-rose-500">*</span></label>
                             <select id="salesRep" required class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-colors appearance-none bg-white cursor-pointer">
                                 <option value="" disabled selected>請選擇業務人員</option>
-                                <!-- JS動態載入 -->
                             </select>
                         </div>
 
@@ -184,7 +182,6 @@
                             <label class="block text-xs font-bold text-slate-600 mb-1">出貨管道 / 方式 <span class="text-rose-500">*</span></label>
                             <select id="deliveryMethod" required class="w-full rounded-xl border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-colors appearance-none bg-white cursor-pointer">
                                 <option value="" disabled selected>請選擇出貨方式</option>
-                                <!-- JS動態載入 -->
                             </select>
                         </div>
 
@@ -298,7 +295,6 @@
                     <button type="button" onclick="setSubmitTypeAndSubmit('Order')" class="px-8 py-3.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-200 transition-all flex items-center justify-center gap-2 shadow-md shadow-indigo-200 order-1 sm:order-2 cursor-pointer">
                         <i class="fa-solid fa-check-double"></i> <span id="btn-order-text">確認送出 (成立訂購單)</span>
                     </button>
-                    <!-- 隱藏的實際提交按鈕 -->
                     <button type="submit" id="hidden-submit-btn" class="hidden"></button>
                 </div>
             </form>
@@ -354,7 +350,7 @@
                 </div>
             </div>
 
-            <!-- 新增：待出貨預報區塊 -->
+            <!-- 待出貨預報區塊 -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <!-- 今日/明日 視窗 -->
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 flex flex-col justify-center">
@@ -380,7 +376,7 @@
                 </div>
             </div>
 
-            <!-- 新增：本週出貨與未出貨動態消長總表 -->
+            <!-- 本週出貨與未出貨動態消長總表 -->
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 flex flex-col">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                     <div>
@@ -442,7 +438,6 @@
                             </tr>
                         </thead>
                         <tbody id="orders-tbody" class="divide-y divide-slate-100 bg-white">
-                            <!-- JS 自動生成列表 -->
                             <tr>
                                 <td colspan="6" class="py-12 text-center text-slate-400">
                                     <i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><br>資料載入中...
@@ -468,7 +463,6 @@
                 
                 <!-- ☁️ 雲端同步與多台電腦連線設定面板 (點擊收合防護) -->
                 <div class="bg-white rounded-2xl shadow-sm border border-indigo-200 overflow-hidden col-span-1 md:col-span-2 p-0">
-                    <!-- 收合觸發區 (Header) -->
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center p-6 border-b border-slate-100 gap-2 cursor-pointer hover:bg-slate-50 transition-colors" onclick="window.toggleCloudConfig()">
                         <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
                             <i class="fa-solid fa-cloud text-indigo-600 animate-pulse"></i> 多裝置雲端同步與資料庫設定
@@ -483,7 +477,6 @@
                         </div>
                     </div>
                     
-                    <!-- 隱藏的設定內容區 (Body) -->
                     <div id="cloud-config-container" class="hidden p-6 space-y-4 bg-slate-50/50">
                         <p class="text-xs text-slate-500 leading-relaxed">
                             本系統內建「Google Firebase Firestore」即時雲端同步。您只需建立一個免費的 Firebase 專案並填入下方配置，即可在**多台電腦、平板、手機**上同步操作，所有單據、報價、基礎設定都將**即時秒級更新**。
@@ -669,7 +662,6 @@
                             <li class="flex justify-between items-center"><span class="text-slate-500">電子信箱:</span> <span id="modal-email" class="font-medium"></span></li>
                             <li class="flex justify-between items-center"><span class="text-slate-500">出貨管道:</span> <span id="modal-delivery-method" class="font-medium"></span></li>
                             <li class="flex justify-between items-center"><span class="text-slate-500">預定出貨日:</span> <span id="modal-delivery-date" class="font-medium text-indigo-600"></span></li>
-                            <!-- 發票開立方式改由業助後台填寫後才會有值 -->
                             <li class="flex justify-between items-center"><span class="text-slate-500">發票方式:</span> <span id="modal-invoice-method" class="font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200 text-[11px]">尚未填寫</span></li>
                             <li class="flex justify-between items-center"><span class="text-slate-500">業務備註:</span></li>
                         </ul>
@@ -694,7 +686,6 @@
                                         <label class="text-[11px] font-bold text-indigo-700 whitespace-nowrap w-24">發票開立方式：</label>
                                         <select id="modal-invoice-input" required class="flex-grow rounded-lg border border-indigo-200 bg-indigo-50/50 px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/50">
                                             <option value="" disabled selected>請選擇開立方式...</option>
-                                            <!-- JS動態載入 -->
                                         </select>
                                     </div>
                                     
@@ -727,7 +718,6 @@
                             <div id="shipper-delivery-area" class="mt-2 hidden text-left bg-emerald-50/50 p-3 rounded-lg border border-emerald-100">
                                 <label class="block text-[11px] font-bold text-emerald-800 mb-1.5"><i class="fa-solid fa-truck-ramp-box"></i> 最終確認或修改出貨方式：</label>
                                 <select id="shipper-delivery-method-select" class="w-full mb-3 rounded-md border border-emerald-200 bg-white px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50">
-                                    <!-- JS 動態載入 -->
                                 </select>
                                 <button onclick="window.confirmShipping()" class="w-full px-4 py-2.5 bg-emerald-600 text-white font-bold text-sm rounded-lg hover:bg-emerald-700 transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer">
                                     <i class="fa-solid fa-truck-fast"></i> 確認完成商品出貨
@@ -752,7 +742,6 @@
                                 </tr>
                             </thead>
                             <tbody id="modal-items-tbody" class="divide-y divide-slate-100">
-                                <!-- JS 生成 -->
                             </tbody>
                             <tfoot class="bg-slate-50 border-t border-slate-200">
                                 <tr>
@@ -828,17 +817,16 @@
             deliveryMethods: []
         };
         
-        let currentUser = null; // 儲存經身分驗證後的 user 物件
+        let currentUser = null; 
+        let isListening = false; // 防重覆註冊監聽閘
 
-        // 用於編輯模式
+        // 用於編輯與範本複製模式
         window.editingOrderId = null;
-        window.clonedFromDocNo = null; // 用於追蹤是否為複製單據
+        window.clonedFromDocNo = null; 
         window.originView = null; 
         window.formPreviewMode = 'desktop';
 
-        // 嘗試初始化資料庫
         async function initializeDatabase() {
-            // 利用字串拆分技巧，完美避開 GitHub 針對 "AIzaSy..." 的特徵掃描
             const keyP1 = "AIzaSyAaXfaLPO7";
             const keyP2 = "n8XK6o0sdZglzhIf_FYfaalc";
             
@@ -851,7 +839,6 @@
             };
             let targetAppId = 'sch-lifestyle-app';
 
-            // 1. 優先檢查環境變數（系統運行時自備的 Firebase）
             if (typeof __firebase_config !== 'undefined' && __firebase_config) {
                 try {
                     config = JSON.parse(__firebase_config);
@@ -859,9 +846,7 @@
                 } catch(e) {
                     console.error("解析系統內嵌配置出錯:", e);
                 }
-            } 
-            // 2. 次之讀取使用者自訂配置（LocalStorage 儲存之跨裝置資料庫）
-            else {
+            } else {
                 const savedConfig = localStorage.getItem("custom_firebase_config");
                 if (savedConfig) {
                     try {
@@ -882,7 +867,6 @@
                     window.auth = getAuth(app);
                     window.db = getFirestore(app);
 
-                    // RULE 3 - 先行並等待身分認證 (Anonymous / Token)
                     let userCredential;
                     if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                         userCredential = await signInWithCustomToken(window.auth, __initial_auth_token);
@@ -898,7 +882,6 @@
                             currentUser = user;
                             window.dbStatus = "firebase";
                             
-                            // 更新橫幅
                             const banner = document.getElementById("connection-banner");
                             banner.className = "bg-emerald-50 border-b border-emerald-200 text-emerald-700 py-2 px-4 text-xs font-bold text-center shadow-inner block";
                             banner.innerHTML = `<i class="fa-solid fa-cloud text-emerald-500 mr-1 animate-bounce"></i> 雲端同步中 - 多裝置數據已即時同步 (AppID: ${window.appId})`;
@@ -929,9 +912,6 @@
             loadLocalData();
         }
 
-        // ==========================================
-        // 觸控相容的客製化 Confirm 彈出視窗
-        // ==========================================
         window.showConfirm = function(title, message, onConfirmCallback, type="warning") {
             const modal = document.getElementById('confirm-modal');
             const titleEl = document.getElementById('confirm-title');
@@ -975,14 +955,9 @@
             modal.classList.remove('hidden');
         }
 
-        // ==========================================
-        // 核心資料解析機制 (關聯 ID 與 實際名稱)
-        // 雙向相容機制：若 ID 暫時對不上，依據名稱自動補齊
-        // ==========================================
         window.resolveOrderData = function(order) {
             let resolved = { ...order };
             
-            // 優先以儲存的 ID 去基礎數據中尋找對應最新資料
             if (order.customerId) {
                 let c = window.basisData.customers.find(x => x.id === order.customerId);
                 if (!c && order.customerName) {
@@ -1021,25 +996,21 @@
             return resolved;
         };
 
-        // ==========================================
-        // Firebase 監聽與基礎資料建置
-        // ==========================================
         function listenToFirestore() {
-            // RULE 3: 限制認證完成後再執行
+            if (isListening) return; // 確保只掛載一次監聽
+            isListening = true;
             if (!window.db || !currentUser) return;
             
-            // RULE 1: 使用嚴格公共資料路徑
             const ordersRef = collection(window.db, 'artifacts', window.appId, 'public', 'data', 'orders');
             onSnapshot(ordersRef, (snapshot) => {
                 let freshData = [];
                 snapshot.forEach(doc => freshData.push({ id: doc.id, ...doc.data() }));
-                // RULE 2: 不在查詢中使用 orderBy，使用記憶體 JavaScript 排序
                 freshData.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
                 window.ordersData = freshData;
 
                 renderOrderList();
                 updateDashboardStats();
-                loadCloudConfigFields(); // 更新狀態顯示
+                loadCloudConfigFields(); 
             }, (error) => {
                 console.error("監聽 Orders 錯誤:", error);
             });
@@ -1064,9 +1035,6 @@
             });
         }
 
-        // ==========================================
-        // LocalStorage 單機模式處理
-        // ==========================================
         function loadLocalData() {
             const lsOrders = localStorage.getItem("easyorder_orders");
             if (lsOrders) {
@@ -1092,12 +1060,9 @@
             renderDropdownsAndSettings();
             renderOrderList();
             updateDashboardStats();
-            loadCloudConfigFields(); // 更新單機狀態
+            loadCloudConfigFields(); 
         }
 
-        // ==========================================
-        // 封裝的資料寫入方法 (相容 Cloud/Local)
-        // ==========================================
         window.saveOrderToDb = async function(payload, existingId = null) {
             try {
                 if (window.dbStatus === "firebase" && window.db && currentUser) {
@@ -1165,10 +1130,6 @@
                 renderDropdownsAndSettings();
             }
         }
-
-        // ==========================================
-        // 基礎設定 (Settings) 寫入方法 與 關聯更新
-        // ==========================================
 
         window.handleAddCustomer = async function(event) {
             event.preventDefault();
@@ -1300,7 +1261,7 @@
                 }
             }
 
-            // 執行關聯更新 (Cascade Update)：當修改客戶與業務時，將同步覆寫所有包含該資料的歷史單據
+            // 連動關聯更新歷史單據，維持強一致性
             if (col === 'customers' || col === 'salesReps') {
                 window.ordersData.forEach(async (o) => {
                     let shouldUpdateOrder = false;
@@ -1344,21 +1305,16 @@
             showCustomMessage(`修改成功，且所有相關單據已連動更新！`);
         }
 
-        // ==========================================
-        // 一鍵複製/範本承接功能：以此單據為藍本建立新單
-        // ==========================================
         window.duplicateOrder = function(orderId) {
             const rawOrder = window.ordersData.find(x => x.id === orderId);
             if (!rawOrder) return;
             
             const order = window.resolveOrderData(rawOrder);
             
-            // 複製成全新單據，因此不帶入既有 editingOrderId 與 clonedFromDocNo
             window.editingOrderId = null;
             window.clonedFromDocNo = order.docNo;
             window.originView = 'admin'; 
             
-            // 配置修改中提示元件
             const indicator = document.getElementById("editing-indicator");
             const iconBox = document.getElementById("editing-icon-box");
             const icon = document.getElementById("editing-icon");
@@ -1374,7 +1330,6 @@
             subtitle.innerHTML = `您正在基於單號 <span class="font-bold underline decoration-sky-300 underline-offset-2">${order.docNo}</span> 建立全新的單據。送出後將產生全新編號，不影響原單。`;
             indicator.classList.remove("hidden");
 
-            // 回填基礎客戶資訊
             const customerSelect = document.getElementById("customerName");
             let customerFound = Array.from(customerSelect.options).find(opt => order.customerId ? opt.value === order.customerId : opt.dataset.name === order.customerName);
             
@@ -1406,7 +1361,6 @@
             document.getElementById("discountRate").value = order.discountRate || 100;
             document.getElementById("discountReason").value = order.discountReason || "";
             
-            // 特殊折讓欄位狀態
             const reasonContainer = document.getElementById("discount-reason-container");
             const reasonInput = document.getElementById("discountReason");
             if (order.discountRate < 100) {
@@ -1417,7 +1371,6 @@
                 reasonInput.removeAttribute("required");
             }
 
-            // 深拷貝商品明細，並確保末行自動延展
             window.orderItems = JSON.parse(JSON.stringify(order.items || []));
             if (window.orderItems.length === 0) {
                 window.orderItems.push({ code: "", name: "", qty: "", price: "", subtotal: 0, isRetention: false, isSample: false });
@@ -1438,9 +1391,6 @@
             showCustomMessage("📋 已複製前次單據內容！您可以修改後作為新單送出。");
         }
 
-        // ==========================================
-        // 業務編輯未轉訂單的報價單 (Quotation Editing View Loader)
-        // ==========================================
         window.loadQuotationForEdit = function(orderId) {
             const rawOrder = window.ordersData.find(x => x.id === orderId);
             if (!rawOrder || rawOrder.type !== 'Quotation') return;
@@ -1498,7 +1448,6 @@
             document.getElementById("discountRate").value = order.discountRate || 100;
             document.getElementById("discountReason").value = order.discountReason || "";
             
-            // 使用 hidden 切換
             const reasonContainer = document.getElementById("discount-reason-container");
             const reasonInput = document.getElementById("discountReason");
             if (order.discountRate < 100) {
@@ -1507,6 +1456,7 @@
             } else {
                 reasonContainer.classList.add("hidden");
                 reasonInput.removeAttribute("required");
+                reasonInput.value = "";
             }
 
             window.orderItems = JSON.parse(JSON.stringify(order.items || []));
@@ -1528,9 +1478,6 @@
             }
         }
 
-        // ==========================================
-        // UI / 交互邏輯
-        // ==========================================
         function switchMode(mode) {
             document.getElementById('customer-view').classList.add('hidden');
             document.getElementById('admin-view').classList.add('hidden');
@@ -1577,7 +1524,6 @@
             const reasonContainer = document.getElementById("discount-reason-container");
             const reasonInput = document.getElementById("discountReason");
 
-            // 確保一開始是隱藏的
             reasonContainer.classList.add("hidden");
 
             discountInput.addEventListener("input", function() {
@@ -1586,7 +1532,6 @@
                 if (val > 100) val = 100;
                 this.value = val;
 
-                // 改用穩定的 hidden 類別切換
                 if (val < 100) {
                     reasonContainer.classList.remove("hidden");
                     reasonInput.setAttribute("required", "true");
@@ -1620,7 +1565,6 @@
                     manualNameInput.value = "";
                     document.getElementById("manualCustomerCode").value = "";
 
-                    // 若勾選項已打勾，則自動帶入該客戶上一次歷史交易紀錄
                     const customerId = this.value;
                     const autoFillChecked = document.getElementById("autoFillPrevious").checked;
                     if (customerId && autoFillChecked) {
@@ -1635,22 +1579,18 @@
         window.applyPreviousOrderData = function(customerId) {
             const customerOrders = (window.ordersData || []).filter(o => o.customerId === customerId);
             if (customerOrders.length > 0) {
-                // 依日期排序（新到舊）
                 customerOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
                 const lastOrder = customerOrders[0];
                 
-                // 1. 自動匹配負責業務
                 const repSelect = document.getElementById("salesRep");
                 if (lastOrder.salesRepId && Array.from(repSelect.options).some(o => o.value === lastOrder.salesRepId)) {
                     repSelect.value = lastOrder.salesRepId;
                 }
                 
-                // 2. 帶入聯絡信箱
                 if (lastOrder.email) {
                     document.getElementById("email").value = lastOrder.email;
                 }
                 
-                // 3. 帶入出貨管道 / 方式
                 const delSelect = document.getElementById("deliveryMethod");
                 if (lastOrder.deliveryMethod && Array.from(delSelect.options).some(o => o.value === lastOrder.deliveryMethod)) {
                     delSelect.value = lastOrder.deliveryMethod;
@@ -1678,10 +1618,48 @@
         function syncField(index, field, value) {
             window.orderItems[index][field] = value;
             
+            // 智慧型局部 DOM 同步，輸入字元時不重建 DOM，保證輸入極致流暢、不跳游標不卡頓
+            if (field === 'isRetention' || field === 'isSample') {
+                const prefix = field === 'isRetention' ? 'retention' : 'sample';
+                const deskCb = document.getElementById(`desk-${prefix}-${index}`);
+                const mobCb = document.getElementById(`mob-${prefix}-${index}`);
+                if (deskCb) deskCb.checked = value;
+                if (mobCb) mobCb.checked = value;
+            }
+            
+            if (field === 'code') {
+                const deskInput = document.getElementById(`desk-code-${index}`);
+                const mobInput = document.getElementById(`mob-code-${index}`);
+                if (deskInput && deskInput.value !== value) deskInput.value = value;
+                if (mobInput && mobInput.value !== value) mobInput.value = value;
+            }
+
+            if (field === 'name') {
+                const deskInput = document.getElementById(`desk-name-${index}`);
+                const mobInput = document.getElementById(`mob-name-${index}`);
+                if (deskInput && deskInput.value !== value) deskInput.value = value;
+                if (mobInput && mobInput.value !== value) mobInput.value = value;
+            }
+
+            if (field === 'qty') {
+                const deskInput = document.getElementById(`desk-qty-${index}`);
+                const mobInput = document.getElementById(`mob-qty-${index}`);
+                if (deskInput && deskInput.value !== value) deskInput.value = value;
+                if (mobInput && mobInput.value !== value) mobInput.value = value;
+            }
+
+            if (field === 'price') {
+                const deskInput = document.getElementById(`desk-price-${index}`);
+                const mobInput = document.getElementById(`mob-price-${index}`);
+                if (deskInput && deskInput.value !== value) deskInput.value = value;
+                if (mobInput && mobInput.value !== value) mobInput.value = value;
+            }
+
             if (field === 'qty' || field === 'price') {
                 updateSingleSubtotal(index);
             }
             
+            // 只有當最後一行的品項名稱被填入第一個字元時，才觸發自動擴展新行
             if (field === 'name' && value.trim() !== "" && index === window.orderItems.length - 1) {
                 addNewOrderItemRow();
             }
@@ -1724,7 +1702,6 @@
         }
 
         function rebuildAllRows() {
-            // 紀錄目前正在輸入的焦點與游標位置，避免重新渲染時跳出欄位
             const activeEl = document.activeElement;
             const activeId = activeEl ? activeEl.id : null;
             let selectionStart = null;
@@ -1734,7 +1711,7 @@
                 try {
                     selectionStart = activeEl.selectionStart;
                     selectionEnd = activeEl.selectionEnd;
-                } catch(e) {} // 某些 input (如 number) 不支援 selection
+                } catch(e) {} 
             }
 
             const deskTbody = document.getElementById("desktop-items-tbody");
@@ -1800,11 +1777,11 @@
                     <div class="flex gap-3">
                         <div class="w-1/3">
                             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">數量</label>
-                            <input type="number" id="mob-qty-${index}" min="1" value="${item.qty}" oninput="syncField(${index}, 'qty', this.value)" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-center focus:outline-none focus:ring-2 focus:ring-indigo-500/50 font-mono">
+                            <input type="number" id="mob-qty-${index}" min="1" value="${item.qty}" oninput="syncField(${index}, 'qty', this.value)" class="w-full rounded-lg border-slate-300 px-3 py-2 text-sm text-center focus:outline-none focus:ring-2 focus:ring-indigo-500/50 font-mono">
                         </div>
                         <div class="w-2/3">
                             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">單價 (含稅)</label>
-                            <input type="number" id="mob-price-${index}" min="0" value="${item.price}" oninput="syncField(${index}, 'price', this.value)" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-right focus:outline-none focus:ring-2 focus:ring-indigo-500/50 font-mono">
+                            <input type="number" id="mob-price-${index}" min="0" value="${item.price}" oninput="syncField(${index}, 'price', this.value)" class="w-full rounded-lg border-slate-300 px-3 py-2 text-sm text-right focus:outline-none focus:ring-2 focus:ring-indigo-500/50 font-mono">
                         </div>
                     </div>
                     <div class="mt-3 pt-3 border-t border-slate-100 flex justify-between items-center">
@@ -1815,9 +1792,7 @@
                 mobList.appendChild(card);
             });
 
-            // 如果原本有停留在哪個輸入框，將焦點還原回去
             if (activeId) {
-                // 使用極短的 timeout 讓瀏覽器把 DOM 節點重新掛載後再抓取
                 setTimeout(() => {
                     const newEl = document.getElementById(activeId);
                     if (newEl) {
@@ -1833,16 +1808,14 @@
         }
 
         function renderDropdownsAndSettings() {
-            // 備份當前已被選取的表單值以防止異步更新覆寫
             const curCustomer = document.getElementById("customerName").value;
             const curSalesRep = document.getElementById("salesRep").value;
             const curDelivery = document.getElementById("deliveryMethod").value;
             
-            // Modal內的發票欄位
             const modalInvSelect = document.getElementById("modal-invoice-input");
             const curInvoice = modalInvSelect ? modalInvSelect.value : "";
 
-            // 客戶
+            // 客戶選單
             const cusSelect = document.getElementById("customerName");
             cusSelect.innerHTML = `
                 <option value="" disabled selected>請選擇現有客戶 (或選擇手動輸入新客戶)</option>
@@ -1866,7 +1839,7 @@
                 `;
             });
 
-            // 業務
+            // 業務選單
             const repSelect = document.getElementById("salesRep");
             repSelect.innerHTML = `<option value="" disabled selected>請選擇業務人員</option>`;
             const setRepList = document.getElementById("settings-salesreps-list");
@@ -1887,7 +1860,7 @@
                 `;
             });
 
-            // 發票方式 (填入 Modal 內的 Select)
+            // 發票開立選單
             if (modalInvSelect) {
                 modalInvSelect.innerHTML = `<option value="" disabled selected>請選擇發票開立方式...</option>`;
                 window.basisData.invoiceMethods.forEach(i => {
@@ -1912,7 +1885,7 @@
                 `;
             });
 
-            // 出貨方式
+            // 出貨管道
             const delSelect = document.getElementById("deliveryMethod");
             delSelect.innerHTML = `<option value="" disabled selected>請選擇出貨方式</option>`;
             const setDelList = document.getElementById("settings-deliverymethods-list");
@@ -1930,7 +1903,6 @@
                 `;
             });
 
-            // 還原先前的選取值，或者是自動綁定正在修改中的單據值
             if (curCustomer && Array.from(cusSelect.options).some(o => o.value === curCustomer)) {
                 cusSelect.value = curCustomer;
             } else if (window.editingOrderId) {
@@ -1953,9 +1925,6 @@
             }
         }
 
-        // ==========================================
-        // 智慧單號自動生成 (保證唯一、每日 01 流水號開始)
-        // ==========================================
         window.generateDocNumber = function(type) {
             const now = new Date();
             const yy = String(now.getFullYear()).slice(-2);
@@ -1967,7 +1936,6 @@
             let maxSuffix = 0;
             
             (window.ordersData || []).forEach(o => {
-                // 1. 檢查主單號 (docNo)
                 if (o.docNo && o.docNo.startsWith(prefix)) {
                     const suffixStr = o.docNo.slice(prefix.length);
                     const suffix = parseInt(suffixStr, 10);
@@ -1976,8 +1944,6 @@
                     }
                 }
                 
-                // 2. 檢查來源報價單號 (refQuotationNo)
-                // 避免報價單轉訂單後 (主單號變成 OD)，原本的 QT 單號被系統誤認為未被使用而重複配發，導致退回時衝突
                 if (o.refQuotationNo && o.refQuotationNo.startsWith(prefix)) {
                     const suffixStr = o.refQuotationNo.slice(prefix.length);
                     const suffix = parseInt(suffixStr, 10);
@@ -2026,14 +1992,12 @@
                     refQuotationNo = original.docNo || ""; 
                 }
             } else if (window.clonedFromDocNo) {
-                // 如果是複製單據，則依照送出類型重新生成一筆全新的單號，並關聯前單（若原單為報價單且轉成訂單）
                 docNo = window.generateDocNumber(submitType);
                 if (window.clonedFromDocNo.startsWith("QT-") && submitType === "Order") {
                     refQuotationNo = window.clonedFromDocNo;
                 }
             }
 
-            // 判斷客戶編號與名稱，並儲存關聯 ID
             let finalCustomerCode = "";
             let finalCustomerName = "";
             let customerId = null;
@@ -2047,7 +2011,6 @@
                     return;
                 }
 
-                // 自動寫入客戶名單基礎數據表 (防重機制)
                 const existingCustomer = window.basisData.customers.find(x => x.name.trim() === finalCustomerName);
                 if (existingCustomer) {
                     customerId = existingCustomer.id;
@@ -2084,7 +2047,6 @@
                 finalCustomerName = selectedOpt ? (selectedOpt.dataset.name || "") : "";
             }
 
-            // 儲存業務關聯 ID 與 業務編號 (加入安全防護防止 undefined)
             const repSelect = document.getElementById("salesRep");
             const salesRepId = repSelect.value;
             const selectedRepOpt = repSelect.options[repSelect.selectedIndex];
@@ -2094,7 +2056,6 @@
             const rawTotal = parseFloat(document.getElementById("display-raw-total").innerText.replace(/,/g, ''));
             const grandTotal = parseFloat(document.getElementById("display-grand-total").innerText.replace(/,/g, ''));
 
-            // 發票開立方式留空，由業助後台填寫 (除了修改既有訂單可能已填過外，新單預設為空)
             const existingInvoiceMethod = window.editingOrderId ? (window.ordersData.find(x => x.id === window.editingOrderId)?.invoiceMethod || "") : "";
             const existingInvoiceNo = window.editingOrderId ? (window.ordersData.find(x => x.id === window.editingOrderId)?.invoiceNo || "") : "";
 
@@ -2105,7 +2066,7 @@
                 customerCode: finalCustomerCode || "",
                 customerName: finalCustomerName || "",
                 salesRepId: salesRepId || "",
-                salesRepCode: salesRepCode || "", // 保存業務編號
+                salesRepCode: salesRepCode || "", 
                 salesRep: salesRepName || "", 
                 email: document.getElementById("email").value || "",
                 deliveryDate: document.getElementById("deliveryDate").value || "",
@@ -2139,7 +2100,7 @@
 
         function resetForm() {
             window.editingOrderId = null;
-            window.clonedFromDocNo = null; // 清除複製單據來源註記
+            window.clonedFromDocNo = null; 
             window.originView = null; 
             document.getElementById("editing-indicator").classList.add("hidden");
             document.getElementById("order-form").reset();
@@ -2162,9 +2123,6 @@
             initItemsForm();
         }
 
-        // ==========================================
-        // 後台管理端邏輯
-        // ==========================================
         window.confirmDeleteOrder = function(orderId) {
             window.showConfirm(
                 "刪除單據",
@@ -2185,28 +2143,33 @@
                 "確認銷貨單內容無誤並讓該訂單進入「備貨中」狀態嗎？\n(註：此動作會同步將「單號日期」更新為今日，以便準確統計備貨瓶數)",
                 async () => {
                     const nowISO = new Date().toISOString();
+                    
+                    // 悲觀本機加值快取優化 - 毫秒級無感更新，防止網路卡頓延遲
+                    const order = window.ordersData.find(x => x.id === orderId);
+                    if (order) {
+                        order.status = 'Preparing';
+                        order.createdAt = nowISO;
+                        order.updatedAt = nowISO;
+                    }
+                    
                     if (window.dbStatus === "firebase" && window.db && currentUser) {
                         const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'orders', orderId);
                         await updateDoc(docRef, { 
                             status: 'Preparing', 
-                            createdAt: nowISO, // 重新寫入單據生效日期為目前時間
+                            createdAt: nowISO, 
                             updatedAt: nowISO 
                         });
                     } else {
-                        const order = window.ordersData.find(x => x.id === orderId);
-                        if (order) {
-                            order.status = 'Preparing';
-                            order.createdAt = nowISO; // 重新寫入單據生效日期為目前時間
-                            order.updatedAt = nowISO;
-                            localStorage.setItem("easyorder_orders", JSON.stringify(window.ordersData));
-                            if (typeof window.updateDashboardStats === 'function') window.updateDashboardStats();
-                            if (typeof window.renderOrderList === 'function') window.renderOrderList();
-                        }
+                        localStorage.setItem("easyorder_orders", JSON.stringify(window.ordersData));
                     }
+                    
+                    if (typeof window.updateDashboardStats === 'function') window.updateDashboardStats();
+                    if (typeof window.renderOrderList === 'function') window.renderOrderList();
+                    
                     showCustomMessage("✅ 已完成覆核，訂單進入備貨狀態！單據日期已更新為今日。");
                     const modal = document.getElementById('order-modal');
                     if (!modal.classList.contains('hidden')) {
-                        viewOrderDetails(orderId); // 重新渲染 Modal 以顯示出貨按鈕
+                        viewOrderDetails(orderId); 
                     }
                 },
                 "success"
@@ -2218,32 +2181,33 @@
             window.approveOrder(orderId);
         }
 
-        // 幫助尋找單據編號所對應的 ID（用於點擊關聯單號跳轉）
         window.findOrderIdByDocNo = function(docNo) {
             if (!docNo) return null;
             const found = window.ordersData.find(x => x.docNo === docNo);
             return found ? found.id : null;
         };
 
-        // 新增功能：退回已覆核狀態到待覆核上一步
         window.revertPreparingToInvoiced = function(orderId) {
             window.showConfirm(
                 "退回至待覆核",
                 "確定要取消此單據的覆核放行狀態，退回為「已登錄銷貨單 (待覆核)」嗎？",
                 async () => {
+                    const order = window.ordersData.find(x => x.id === orderId);
+                    if (order) {
+                        order.status = "Invoiced";
+                        order.updatedAt = new Date().toISOString();
+                    }
+
                     if (window.dbStatus === "firebase" && window.db && currentUser) {
                         const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'orders', orderId);
                         await updateDoc(docRef, { status: "Invoiced", updatedAt: new Date().toISOString() });
                     } else {
-                        const order = window.ordersData.find(x => x.id === orderId);
-                        if (order) {
-                            order.status = "Invoiced";
-                            order.updatedAt = new Date().toISOString();
-                            localStorage.setItem("easyorder_orders", JSON.stringify(window.ordersData));
-                            if (typeof window.updateDashboardStats === 'function') window.updateDashboardStats();
-                            if (typeof window.renderOrderList === 'function') window.renderOrderList();
-                        }
+                        localStorage.setItem("easyorder_orders", JSON.stringify(window.ordersData));
                     }
+
+                    if (typeof window.updateDashboardStats === 'function') window.updateDashboardStats();
+                    if (typeof window.renderOrderList === 'function') window.renderOrderList();
+
                     showCustomMessage("🔄 已成功退回覆核，單據恢復為待覆核狀態！");
                     const modal = document.getElementById('order-modal');
                     if (!modal.classList.contains('hidden')) {
@@ -2270,7 +2234,7 @@
             let filteredCount = 0;
 
             data.forEach(rawOrder => {
-                const order = window.resolveOrderData(rawOrder); // 動態解析最新名稱與編號
+                const order = window.resolveOrderData(rawOrder); 
 
                 if (filterType !== 'ALL') {
                     if (filterType === 'Quotation' && order.type !== 'Quotation') return;
@@ -2297,16 +2261,13 @@
                 let displaySubNo = '';
 
                 if (order.type === "Order" && order.salesSlipNo) {
-                    // 已轉銷貨單
                     displayTypeBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-sky-50 text-sky-700 border border-sky-200">銷貨單</span>`;
                     displayMainNo = order.salesSlipNo;
                     displaySubNo = `<div class="text-[10px] text-slate-400 mt-0.5 whitespace-nowrap" title="來源訂購單號"><i class="fa-solid fa-link text-[9px] mr-0.5 opacity-70"></i>源: ${order.docNo}</div>`;
                 } else if (order.type === "Order") {
-                    // 尚未轉銷貨單的訂單
                     displayTypeBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">訂購單</span>`;
                     displayMainNo = order.docNo;
                 } else {
-                    // 報價單草稿
                     displayTypeBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200">報價單</span>`;
                     displayMainNo = order.docNo;
                 }
@@ -2394,12 +2355,10 @@
                     </div>
                 `;
 
-                // 組合客戶顯示字串 (若有編號則顯示)
                 const customerDisplay = order.customerCode 
                     ? `<span class="bg-slate-100 text-slate-500 text-[10px] px-1.5 py-0.5 rounded font-mono mr-1.5 border border-slate-200">${order.customerCode}</span>${escapeHtml(order.customerName)}`
                     : escapeHtml(order.customerName);
 
-                // 組合負責業務顯示字串 (隱藏業務編號)
                 const salesRepDisplayStr = escapeHtml(order.salesRep);
 
                 tr.innerHTML = `
@@ -2452,7 +2411,6 @@
             document.getElementById("stat-shipped").innerText = shipped;
             document.getElementById("stat-revenue").innerText = "$" + totalRev.toLocaleString();
 
-            // === 新增：待出貨數量統計邏輯 ===
             const formatDate = (d) => {
                 const yyyy = d.getFullYear();
                 const mm = String(d.getMonth() + 1).padStart(2, '0');
@@ -2468,7 +2426,7 @@
             const tomorrowStr = formatDate(tomorrow);
 
             // 尋找本週一
-            const dayOfWeek = today.getDay(); // 0 是週日
+            const dayOfWeek = today.getDay(); 
             const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
             const monday = new Date(today);
             monday.setDate(monday.getDate() + diffToMonday);
@@ -2483,24 +2441,21 @@
             let todayQty = 0;
             let tomorrowQty = 0;
             let weekQty = [0, 0, 0, 0, 0, 0, 0];
-            let weekOrdersCount = [0, 0, 0, 0, 0, 0, 0]; // 新增：用來統計單數
+            let weekOrdersCount = [0, 0, 0, 0, 0, 0, 0]; 
 
-            // 篩選出未結案出貨的正式訂單
             const pendingOrders = data.filter(x => x.type === 'Order' && x.status !== 'Shipped');
 
             pendingOrders.forEach(order => {
-                // 如果沒有指定預定出貨日，退而求其次使用建單日作為排程日
                 let targetDateStr = order.deliveryDate;
                 if (!targetDateStr) {
                     try {
                         const createDate = new Date(order.createdAt);
                         targetDateStr = formatDate(createDate);
                     } catch(e) {
-                        targetDateStr = todayStr; // fallback
+                        targetDateStr = todayStr; 
                     }
                 }
 
-                // 計算該單的總瓶數 (數量)
                 let orderTotalQty = 0;
                 (order.items || []).forEach(item => {
                     const q = parseInt(item.qty) || 0;
@@ -2513,17 +2468,15 @@
                 const weekIndex = weekDates.indexOf(targetDateStr);
                 if (weekIndex !== -1) {
                     weekQty[weekIndex] += orderTotalQty;
-                    weekOrdersCount[weekIndex] += 1; // 累加該日的待出貨單數
+                    weekOrdersCount[weekIndex] += 1; 
                 }
             });
 
-            // --- 新增：已出貨訂單的數量統計 ---
             let weekShippedQty = [0, 0, 0, 0, 0, 0, 0];
             const shippedOrders = data.filter(x => x.type === 'Order' && x.status === 'Shipped');
 
             shippedOrders.forEach(order => {
                 let targetDateStr = '';
-                // 已出貨的以實際出貨日為準，若無則降級使用預定日或建單日
                 if (order.shippingDate) {
                     targetDateStr = order.shippingDate.split(' ')[0].replace(/\//g, '-');
                 } else {
@@ -2544,7 +2497,6 @@
             const totalWeekPending = weekQty.reduce((a, b) => a + b, 0);
             const totalWeekShipped = weekShippedQty.reduce((a, b) => a + b, 0);
 
-            // 更新今日明日 UI
             const todaySpan = document.getElementById("stat-date-today");
             const tomorrowSpan = document.getElementById("stat-date-tomorrow");
             const qtyToday = document.getElementById("stat-qty-today");
@@ -2555,23 +2507,23 @@
             if (qtyToday) qtyToday.innerText = todayQty;
             if (qtyTomorrow) qtyTomorrow.innerText = tomorrowQty;
 
-            // 更新本週圖表 UI
+            // 修正錯誤：將 dayNames 陣列由區域作用域提升為函式層級，確保儀表板與堆疊消長圖能同時成功存取
+            const dayNames = ['一', '二', '三', '四', '五', '六', '日'];
+
             const chartContainer = document.getElementById("stat-week-chart");
             if (chartContainer) {
                 chartContainer.innerHTML = '';
-                const dayNames = ['一', '二', '三', '四', '五', '六', '日'];
-                const maxQty = Math.max(...weekQty, 10); // 至少以 10 為基底，避免圖表過扁或除零
+                const maxQty = Math.max(...weekQty, 10); 
 
                 weekDates.forEach((dateStr, i) => {
                     const qty = weekQty[i];
-                    const ordersCount = weekOrdersCount[i]; // 取得單數
-                    const heightPct = Math.max((qty / maxQty) * 100, 5); // 至少保留 5% 高度
+                    const ordersCount = weekOrdersCount[i]; 
+                    const heightPct = Math.max((qty / maxQty) * 100, 5); 
                     const isToday = (dateStr === todayStr);
                     
                     let barColor = isToday ? 'bg-indigo-500' : 'bg-slate-300';
                     let textColor = isToday ? 'text-indigo-700 font-extrabold' : 'text-slate-600 font-bold';
 
-                    // 超過 100 瓶的警示效果 (下方保持藍色，上方漸層轉為紅色)
                     if (qty > 100) {
                         barColor = 'bg-gradient-to-t from-indigo-500 via-rose-400 to-rose-500';
                         textColor = 'text-rose-600 font-extrabold';
@@ -2596,7 +2548,6 @@
                 });
             }
 
-            // 更新本週動態消長堆疊圖 UI
             const stackedChartContainer = document.getElementById("stat-stacked-chart");
             if (stackedChartContainer) {
                 stackedChartContainer.innerHTML = '';
@@ -2618,25 +2569,19 @@
 
                     stackedChartContainer.innerHTML += `
                         <div class="flex flex-col items-center flex-1 h-full justify-end">
-                            <!-- 頂部：未出貨數字 -->
                             <div class="text-[11px] font-extrabold text-rose-500 mb-1 leading-none ${pending === 0 ? 'opacity-30' : ''}" title="未出貨瓶數">${pending}</div>
                             
-                            <!-- 堆疊柱狀圖容器 -->
                             <div class="w-full max-w-[48px] bg-slate-50 rounded-t-lg flex flex-col justify-end h-[120px] border-x border-t border-slate-100 overflow-hidden relative group">
-                                <!-- 未出貨柱體 (上方) -->
                                 <div class="w-full bg-rose-400 transition-all duration-500 group-hover:brightness-110 relative" style="height: ${pendingHeight}%" title="週${dayNames[i]} 未出貨: ${pending}瓶">
                                     <div class="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent"></div>
                                 </div>
-                                <!-- 已出貨柱體 (下方) -->
                                 <div class="w-full bg-emerald-500 transition-all duration-500 group-hover:brightness-110 relative" style="height: ${shippedHeight}%" title="週${dayNames[i]} 已出貨: ${shipped}瓶">
                                     <div class="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent"></div>
                                 </div>
                             </div>
                             
-                            <!-- 底部：已出貨數字 -->
                             <div class="text-[11px] font-extrabold text-emerald-600 mt-1 leading-none ${shipped === 0 ? 'opacity-30' : ''}" title="已出貨瓶數">${shipped}</div>
                             
-                            <!-- 日期標籤 -->
                             <div class="text-[10px] ${isToday ? 'text-indigo-600 font-bold bg-indigo-50 px-1.5 rounded mt-1' : 'text-slate-400 font-medium mt-1'}">週${dayNames[i]}</div>
                             <div class="text-[9px] text-slate-400">${shortDate}</div>
                         </div>
@@ -2678,7 +2623,6 @@
             document.getElementById("modal-delivery-date").innerText = order.deliveryDate || "未指定";
             document.getElementById("modal-notes").innerText = order.overallNotes || "無備註說明";
 
-            // 發票顯示邏輯處理
             const invDisplay = document.getElementById("modal-invoice-method");
             if (order.invoiceMethod) {
                 invDisplay.innerText = order.invoiceMethod;
@@ -2688,7 +2632,6 @@
                 invDisplay.className = "font-medium px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200 text-[11px]";
             }
 
-            // 預載 Modal 內的發票選單值
             const modalInvSelect = document.getElementById("modal-invoice-input");
             if (modalInvSelect) {
                 if (order.invoiceMethod && Array.from(modalInvSelect.options).some(o => o.value === order.invoiceMethod)) {
@@ -2698,7 +2641,6 @@
                 }
             }
 
-            // 處理單據前後關聯追溯
             const relationContainer = document.getElementById("modal-relation-container");
             const relationLink = document.getElementById("modal-relation-link");
             relationContainer.classList.add("hidden");
@@ -2767,7 +2709,6 @@
                     `;
                     shippingArea.classList.remove("hidden"); 
                     
-                    // 載入出貨方式供出貨人員最後確認/修改
                     const shipperDeliverySelect = document.getElementById("shipper-delivery-method-select");
                     if (shipperDeliverySelect) {
                         shipperDeliverySelect.innerHTML = `<option value="" disabled>請選擇出貨方式...</option>`;
@@ -2775,7 +2716,6 @@
                             const selected = (order.deliveryMethod === d.name) ? 'selected' : '';
                             shipperDeliverySelect.innerHTML += `<option value="${d.name}" ${selected}>${d.name}</option>`;
                         });
-                        // 若原單據出貨方式已被刪除但仍存在於單據中，則自訂一個選項避免丟失
                         if (order.deliveryMethod && !window.basisData.deliveryMethods.some(d => d.name === order.deliveryMethod)) {
                             shipperDeliverySelect.innerHTML += `<option value="${order.deliveryMethod}" selected>${order.deliveryMethod} (停用/自訂)</option>`;
                         }
@@ -2831,7 +2771,7 @@
             document.getElementById("modal-grand-total").innerText = "$" + (order.grandTotal || 0).toLocaleString();
 
             openModal('order-modal');
-        } // 已修復遺失的大括號
+        } 
 
         window.enableEditSalesSlipNo = function(currentNo, currentInvoiceNo) {
             document.getElementById("assistant-invoice-area").classList.remove("hidden");
@@ -2848,21 +2788,24 @@
                 "退回待轉銷貨單",
                 "確定要清除目前的銷貨單號，並將單據退回「待轉銷貨單」狀態嗎？",
                 async () => {
+                    const order = window.ordersData.find(x => x.id === orderId);
+                    if (order) {
+                        order.salesSlipNo = "";
+                        order.invoiceNo = "";
+                        order.status = "Order";
+                        order.updatedAt = new Date().toISOString();
+                    }
+
                     if (window.dbStatus === "firebase" && window.db && currentUser) {
                         const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'orders', orderId);
                         await updateDoc(docRef, { salesSlipNo: "", invoiceNo: "", status: "Order", updatedAt: new Date().toISOString() });
                     } else {
-                        const order = window.ordersData.find(x => x.id === orderId);
-                        if (order) {
-                            order.salesSlipNo = "";
-                            order.invoiceNo = "";
-                            order.status = "Order";
-                            order.updatedAt = new Date().toISOString();
-                            localStorage.setItem("easyorder_orders", JSON.stringify(window.ordersData));
-                            if (typeof window.updateDashboardStats === 'function') window.updateDashboardStats();
-                            if (typeof window.renderOrderList === 'function') window.renderOrderList();
-                        }
+                        localStorage.setItem("easyorder_orders", JSON.stringify(window.ordersData));
                     }
+
+                    if (typeof window.updateDashboardStats === 'function') window.updateDashboardStats();
+                    if (typeof window.renderOrderList === 'function') window.renderOrderList();
+
                     showCustomMessage("🔄 已退回「待轉銷貨單」狀態！");
                     viewOrderDetails(orderId);
                 },
@@ -2887,6 +2830,12 @@
             const order = currentData.find(x => x.id === orderId);
             if (!order) return;
 
+            order.salesSlipNo = slipNo;
+            order.invoiceMethod = invoiceMethod;
+            order.invoiceNo = invoiceNo;
+            order.status = 'Invoiced';
+            order.updatedAt = new Date().toISOString();
+
             if (window.dbStatus === "firebase" && window.db && currentUser) {
                 const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'orders', orderId);
                 await updateDoc(docRef, {
@@ -2897,15 +2846,11 @@
                     updatedAt: new Date().toISOString()
                 });
             } else {
-                order.salesSlipNo = slipNo;
-                order.invoiceMethod = invoiceMethod;
-                order.invoiceNo = invoiceNo;
-                order.status = 'Invoiced';
-                order.updatedAt = new Date().toISOString();
                 localStorage.setItem("easyorder_orders", JSON.stringify(window.ordersData));
-                if (typeof window.updateDashboardStats === 'function') window.updateDashboardStats();
-                if (typeof window.renderOrderList === 'function') window.renderOrderList();
             }
+
+            if (typeof window.updateDashboardStats === 'function') window.updateDashboardStats();
+            if (typeof window.renderOrderList === 'function') window.renderOrderList();
 
             showCustomMessage(`✅ 已成功將單據綁定銷貨單號與發票方式，並轉交業務覆核！`);
             viewOrderDetails(orderId); 
@@ -2933,6 +2878,12 @@
 
                     const revertedDocNo = order.refQuotationNo || window.generateDocNumber("Quotation");
 
+                    order.docNo = revertedDocNo;
+                    order.refQuotationNo = "";
+                    order.type = 'Quotation';
+                    order.status = 'Draft';
+                    order.updatedAt = new Date().toISOString();
+
                     if (window.dbStatus === "firebase" && window.db && currentUser) {
                         const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'orders', orderId);
                         await updateDoc(docRef, {
@@ -2943,15 +2894,12 @@
                             updatedAt: new Date().toISOString()
                         });
                     } else {
-                        order.docNo = revertedDocNo;
-                        order.refQuotationNo = "";
-                        order.type = 'Quotation';
-                        order.status = 'Draft';
-                        order.updatedAt = new Date().toISOString();
                         localStorage.setItem("easyorder_orders", JSON.stringify(window.ordersData));
-                        if (typeof window.updateDashboardStats === 'function') window.updateDashboardStats();
-                        if (typeof window.renderOrderList === 'function') window.renderOrderList();
                     }
+
+                    if (typeof window.updateDashboardStats === 'function') window.updateDashboardStats();
+                    if (typeof window.renderOrderList === 'function') window.renderOrderList();
+
                     showCustomMessage("🔄 已成功將單據退回「報價單」狀態！");
                 },
                 "warning"
@@ -2965,6 +2913,12 @@
 
             const newOrderNo = window.generateDocNumber("Order");
 
+            rfq.refQuotationNo = rfq.docNo || "";
+            rfq.docNo = newOrderNo;
+            rfq.type = 'Order';
+            rfq.status = 'Order';
+            rfq.updatedAt = new Date().toISOString();
+
             if (window.dbStatus === "firebase" && window.db && currentUser) {
                 const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'orders', orderId);
                 
@@ -2972,7 +2926,7 @@
                 if (!docSnap.exists()) {
                     const payloadClone = { ...rfq };
                     delete payloadClone.id;
-                    await setDoc(newDocRef, payloadClone);
+                    await setDoc(docRef, payloadClone); 
                 }
 
                 await updateDoc(docRef, {
@@ -2983,15 +2937,12 @@
                     updatedAt: new Date().toISOString()
                 });
             } else {
-                rfq.refQuotationNo = rfq.docNo || "";
-                rfq.docNo = newOrderNo;
-                rfq.type = 'Order';
-                rfq.status = 'Order';
-                rfq.updatedAt = new Date().toISOString();
                 localStorage.setItem("easyorder_orders", JSON.stringify(window.ordersData));
-                if (typeof window.updateDashboardStats === 'function') window.updateDashboardStats();
-                if (typeof window.renderOrderList === 'function') window.renderOrderList();
             }
+
+            if (typeof window.updateDashboardStats === 'function') window.updateDashboardStats();
+            if (typeof window.renderOrderList === 'function') window.renderOrderList();
+
             return true;
         }
 
@@ -3013,6 +2964,11 @@
 
             const finalDeliveryMethod = newDeliveryMethod || order.deliveryMethod || "";
 
+            order.status = 'Shipped';
+            order.shippingDate = shipTime;
+            order.deliveryMethod = finalDeliveryMethod;
+            order.updatedAt = new Date().toISOString();
+
             if (window.dbStatus === "firebase" && window.db && currentUser) {
                 const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'orders', orderData.id);
                 await updateDoc(docRef, {
@@ -3022,14 +2978,12 @@
                     updatedAt: new Date().toISOString()
                 });
             } else {
-                order.status = 'Shipped';
-                order.shippingDate = shipTime;
-                order.deliveryMethod = finalDeliveryMethod;
-                order.updatedAt = new Date().toISOString();
                 localStorage.setItem("easyorder_orders", JSON.stringify(window.ordersData));
-                if (typeof window.updateDashboardStats === 'function') window.updateDashboardStats();
-                if (typeof window.renderOrderList === 'function') window.renderOrderList();
             }
+
+            if (typeof window.updateDashboardStats === 'function') window.updateDashboardStats();
+            if (typeof window.renderOrderList === 'function') window.renderOrderList();
+
             showCustomMessage(`📦 商品出貨作業已確認！系統已自動壓註出貨時間。`);
         }
 
@@ -3088,9 +3042,6 @@
             document.body.removeChild(link);
         }
 
-        // ==========================================
-        // 儲存與清除自訂雲端設定相關方法
-        // ==========================================
         window.toggleCloudConfig = function() {
             const container = document.getElementById('cloud-config-container');
             const chevron = document.getElementById('cloud-config-chevron');
@@ -3175,7 +3126,6 @@
                     console.error("讀取歷史雲端設定失敗:", e);
                 }
             } else {
-                // 若無自訂配置，自動填入系統預設值 (同樣使用字串拆分避開掃描)
                 const keyP1 = "AIzaSyAaXfaLPO7";
                 const keyP2 = "n8XK6o0sdZglzhIf_FYfaalc";
                 document.getElementById("cloud-app-id").value = 'sch-lifestyle-app';
@@ -3187,9 +3137,6 @@
             }
         }
 
-        // ==========================================
-        // 工具函數
-        // ==========================================
         function openModal(id) {
             const modal = document.getElementById(id);
             modal.classList.remove('hidden');
@@ -3231,7 +3178,6 @@
             }, 4000);
         }
 
-        // 綁定全域調用
         window.switchMode = switchMode;
         window.setFormPreviewMode = setFormPreviewMode;
         window.setSubmitTypeAndSubmit = setSubmitTypeAndSubmit;
@@ -3268,7 +3214,7 @@
 
         window.addEventListener("DOMContentLoaded", () => {
             initItemsForm();
-            initializeDatabase(); // 頁面初始化時，自動判斷並載入對應資料庫
+            initializeDatabase(); 
         });
     </script>
 </body>
