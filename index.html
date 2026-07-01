@@ -369,7 +369,7 @@
                 
                 <!-- 本週分日表 -->
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 lg:col-span-2 flex flex-col">
-                    <h3 class="font-bold text-slate-800 mb-4 flex items-center"><i class="fa-solid fa-calendar-week text-indigo-500 mr-2"></i>本週待出貨總瓶數統計表 (星期一為首日)</h3>
+                    <h3 class="font-bold text-slate-800 mb-4 flex items-center"><i class="fa-solid fa-calendar-week text-indigo-500 mr-2"></i>本週待出貨瓶數統計表 (星期一為首日)</h3>
                     <div class="flex-grow flex items-end justify-between gap-2 mt-2" id="stat-week-chart">
                         <!-- JS 生成長條圖與表格 -->
                     </div>
@@ -432,14 +432,15 @@
                                 <th class="py-3 px-6 font-bold text-slate-500 text-xs uppercase tracking-wider w-24">單號日期</th>
                                 <th class="py-3 px-6 font-bold text-slate-500 text-xs uppercase tracking-wider w-32">類別 / 單號</th>
                                 <th class="py-3 px-6 font-bold text-slate-500 text-xs uppercase tracking-wider">客戶名稱 / 負責業務</th>
-                                <th class="py-3 px-6 font-bold text-slate-500 text-xs uppercase tracking-wider w-24">總金額</th>
+                                <th class="py-3 px-6 font-bold text-slate-500 text-xs uppercase tracking-wider text-right w-20">瓶數</th>
+                                <th class="py-3 px-6 font-bold text-slate-500 text-xs uppercase tracking-wider text-right w-24">總金額</th>
                                 <th class="py-3 px-6 font-bold text-slate-500 text-xs uppercase tracking-wider w-32">當前狀態</th>
                                 <th class="py-3 px-6 font-bold text-slate-500 text-xs uppercase tracking-wider text-right w-72">操作管理</th>
                             </tr>
                         </thead>
                         <tbody id="orders-tbody" class="divide-y divide-slate-100 bg-white">
                             <tr>
-                                <td colspan="6" class="py-12 text-center text-slate-400">
+                                <td colspan="7" class="py-12 text-center text-slate-400">
                                     <i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><br>資料載入中...
                                 </td>
                             </tr>
@@ -660,7 +661,15 @@
                         <h4 class="font-bold text-slate-800 border-b border-slate-200 pb-2 text-sm"><i class="fa-solid fa-circle-info text-indigo-400 mr-1"></i>基本交易條件</h4>
                         <ul class="space-y-2 text-sm">
                             <li class="flex justify-between items-center"><span class="text-slate-500">電子信箱:</span> <span id="modal-email" class="font-medium"></span></li>
-                            <li class="flex justify-between items-center"><span class="text-slate-500">出貨管道:</span> <span id="modal-delivery-method" class="font-medium"></span></li>
+                            
+                            <!-- 出貨管道支援全階段編輯 -->
+                            <li class="flex justify-between items-center">
+                                <span class="text-slate-500 flex-shrink-0">出貨管道:</span> 
+                                <select id="modal-delivery-method-select" onchange="window.updateOrderDeliveryMethod(this.value)" class="font-medium px-2 py-0.5 rounded bg-white text-indigo-700 border border-indigo-200 text-[11px] focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer max-w-[150px] text-right">
+                                    <!-- JS 動態載入 -->
+                                </select>
+                            </li>
+
                             <li class="flex justify-between items-center"><span class="text-slate-500">預定出貨日:</span> <span id="modal-delivery-date" class="font-medium text-indigo-600"></span></li>
                             <li class="flex justify-between items-center"><span class="text-slate-500">發票方式:</span> <span id="modal-invoice-method" class="font-medium px-2 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200 text-[11px]">尚未填寫</span></li>
                             <li class="flex justify-between items-center"><span class="text-slate-500">業務備註:</span></li>
@@ -716,9 +725,8 @@
 
                             <!-- 出貨確認區 (僅當備貨中時顯示) -->
                             <div id="shipper-delivery-area" class="mt-2 hidden text-left bg-emerald-50/50 p-3 rounded-lg border border-emerald-100">
-                                <label class="block text-[11px] font-bold text-emerald-800 mb-1.5"><i class="fa-solid fa-truck-ramp-box"></i> 最終確認或修改出貨方式：</label>
-                                <select id="shipper-delivery-method-select" class="w-full mb-3 rounded-md border border-emerald-200 bg-white px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50">
-                                </select>
+                                <label class="block text-[11px] font-bold text-emerald-800 mb-1.5"><i class="fa-solid fa-truck-ramp-box"></i> 最終確認完成出貨：</label>
+                                <p class="text-[10px] text-emerald-600 mb-3">若需更改出貨方式，請於左側「基本交易條件」中修改下拉選單。</p>
                                 <button onclick="window.confirmShipping()" class="w-full px-4 py-2.5 bg-emerald-600 text-white font-bold text-sm rounded-lg hover:bg-emerald-700 transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer">
                                     <i class="fa-solid fa-truck-fast"></i> 確認完成商品出貨
                                 </button>
@@ -997,7 +1005,7 @@
         };
 
         function listenToFirestore() {
-            if (isListening) return; // 確保只掛載一次監聽
+            if (isListening) return; 
             isListening = true;
             if (!window.db || !currentUser) return;
             
@@ -1618,7 +1626,6 @@
         function syncField(index, field, value) {
             window.orderItems[index][field] = value;
             
-            // 智慧型局部 DOM 同步，輸入字元時不重建 DOM，保證輸入極致流暢、不跳游標不卡頓
             if (field === 'isRetention' || field === 'isSample') {
                 const prefix = field === 'isRetention' ? 'retention' : 'sample';
                 const deskCb = document.getElementById(`desk-${prefix}-${index}`);
@@ -1659,7 +1666,6 @@
                 updateSingleSubtotal(index);
             }
             
-            // 只有當最後一行的品項名稱被填入第一個字元時，才觸發自動擴展新行
             if (field === 'name' && value.trim() !== "" && index === window.orderItems.length - 1) {
                 addNewOrderItemRow();
             }
@@ -1723,7 +1729,6 @@
             window.orderItems.forEach((item, index) => {
                 const isLast = index === window.orderItems.length - 1;
                 
-                // 桌機版結構
                 const tr = document.createElement("tr");
                 tr.className = isLast ? "bg-indigo-50/20" : "hover:bg-slate-50 transition-colors";
                 tr.innerHTML = `
@@ -1755,7 +1760,6 @@
                 `;
                 deskTbody.appendChild(tr);
 
-                // 手機版卡片結構
                 const card = document.createElement("div");
                 card.className = "bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative";
                 if(isLast) card.classList.add("border-indigo-300", "shadow-indigo-100");
@@ -1815,7 +1819,6 @@
             const modalInvSelect = document.getElementById("modal-invoice-input");
             const curInvoice = modalInvSelect ? modalInvSelect.value : "";
 
-            // 客戶選單
             const cusSelect = document.getElementById("customerName");
             cusSelect.innerHTML = `
                 <option value="" disabled selected>請選擇現有客戶 (或選擇手動輸入新客戶)</option>
@@ -1839,7 +1842,6 @@
                 `;
             });
 
-            // 業務選單
             const repSelect = document.getElementById("salesRep");
             repSelect.innerHTML = `<option value="" disabled selected>請選擇業務人員</option>`;
             const setRepList = document.getElementById("settings-salesreps-list");
@@ -1860,7 +1862,6 @@
                 `;
             });
 
-            // 發票開立選單
             if (modalInvSelect) {
                 modalInvSelect.innerHTML = `<option value="" disabled selected>請選擇發票開立方式...</option>`;
                 window.basisData.invoiceMethods.forEach(i => {
@@ -1885,7 +1886,6 @@
                 `;
             });
 
-            // 出貨管道
             const delSelect = document.getElementById("deliveryMethod");
             delSelect.innerHTML = `<option value="" disabled selected>請選擇出貨方式</option>`;
             const setDelList = document.getElementById("settings-deliverymethods-list");
@@ -2144,7 +2144,6 @@
                 async () => {
                     const nowISO = new Date().toISOString();
                     
-                    // 悲觀本機加值快取優化 - 毫秒級無感更新，防止網路卡頓延遲
                     const order = window.ordersData.find(x => x.id === orderId);
                     if (order) {
                         order.status = 'Preparing';
@@ -2227,7 +2226,7 @@
             tbody.innerHTML = "";
 
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="py-12 text-center text-slate-400">目前尚無單據資料。</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="py-12 text-center text-slate-400">目前尚無單據資料。</td></tr>`;
                 return;
             }
 
@@ -2318,6 +2317,11 @@
                 const isPendingReview  = (order.type === 'Order' && order.status === 'Invoiced');
                 const canShip = (order.type === 'Order' && order.status === 'Preparing');
                 
+                let totalBottles = 0;
+                (order.items || []).forEach(item => {
+                    totalBottles += parseInt(item.qty) || 0;
+                });
+
                 const actionButtons = `
                     <div class="flex items-center justify-end space-x-1.5 min-w-[320px]">
                         ${canEditQuotation ? `
@@ -2376,7 +2380,8 @@
                             <i class="fa-regular fa-user mr-1 opacity-70"></i> ${salesRepDisplayStr}
                         </div>
                     </td>
-                    <td class="py-3 px-6 text-xs font-bold text-indigo-600 align-middle font-mono">$${(order.grandTotal || 0).toLocaleString()}</td>
+                    <td class="py-3 px-6 text-sm font-bold text-slate-700 align-middle font-mono text-right">${totalBottles}</td>
+                    <td class="py-3 px-6 text-xs font-bold text-indigo-600 align-middle font-mono text-right">$${(order.grandTotal || 0).toLocaleString()}</td>
                     <td class="py-3 px-6 text-sm whitespace-nowrap align-middle">${statusBadge}</td>
                     <td class="py-3 px-6 text-right align-middle">${actionButtons}</td>
                 `;
@@ -2384,7 +2389,7 @@
             });
 
             if (filteredCount === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="py-12 text-center text-slate-400">找不到符合條件的單據。</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="py-12 text-center text-slate-400">找不到符合條件的單據。</td></tr>`;
             }
         }
 
@@ -2425,7 +2430,6 @@
             const todayStr = formatDate(today);
             const tomorrowStr = formatDate(tomorrow);
 
-            // 尋找本週一
             const dayOfWeek = today.getDay(); 
             const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
             const monday = new Date(today);
@@ -2507,7 +2511,6 @@
             if (qtyToday) qtyToday.innerText = todayQty;
             if (qtyTomorrow) qtyTomorrow.innerText = tomorrowQty;
 
-            // 修正錯誤：將 dayNames 陣列由區域作用域提升為函式層級，確保儀表板與堆疊消長圖能同時成功存取
             const dayNames = ['一', '二', '三', '四', '五', '六', '日'];
 
             const chartContainer = document.getElementById("stat-week-chart");
@@ -2595,6 +2598,28 @@
             }
         }
 
+        window.updateOrderDeliveryMethod = async function(newMethod) {
+            const orderId = document.getElementById("modal-hidden-order-id").value;
+            if (!orderId || !newMethod) return;
+
+            const order = window.ordersData.find(x => x.id === orderId);
+            if (!order) return;
+
+            // Optimistic 本機先行寫入
+            order.deliveryMethod = newMethod;
+            order.updatedAt = new Date().toISOString();
+
+            if (window.dbStatus === "firebase" && window.db && currentUser) {
+                const docRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'orders', orderId);
+                await updateDoc(docRef, { deliveryMethod: newMethod, updatedAt: new Date().toISOString() });
+            } else {
+                localStorage.setItem("easyorder_orders", JSON.stringify(window.ordersData));
+            }
+            
+            if (typeof window.renderOrderList === 'function') window.renderOrderList();
+            showCustomMessage(`🚚 單據出貨管道已成功更新為「${newMethod}」`);
+        };
+
         function viewOrderDetails(orderId) {
             const rawOrder = window.ordersData.find(x => x.id === orderId);
             if (!rawOrder) return;
@@ -2619,9 +2644,28 @@
             document.getElementById("modal-customer").innerHTML = customerDisplay;
             
             document.getElementById("modal-email").innerText = order.email || "未提供";
-            document.getElementById("modal-delivery-method").innerText = order.deliveryMethod || "未提供";
             document.getElementById("modal-delivery-date").innerText = order.deliveryDate || "未指定";
             document.getElementById("modal-notes").innerText = order.overallNotes || "無備註說明";
+
+            // 支援各階段修改出貨管道的選單生成
+            const modalDeliverySelect = document.getElementById("modal-delivery-method-select");
+            if (modalDeliverySelect) {
+                modalDeliverySelect.innerHTML = `<option value="" disabled>請選擇出貨方式...</option>`;
+                window.basisData.deliveryMethods.forEach(d_method => {
+                    const selected = (order.deliveryMethod === d_method.name) ? 'selected' : '';
+                    modalDeliverySelect.innerHTML += `<option value="${d_method.name}" ${selected}>${d_method.name}</option>`;
+                });
+                
+                // 若原單據出貨方式已被刪除但仍存在於單據中，自訂一個選項避免丟失
+                if (order.deliveryMethod && !window.basisData.deliveryMethods.some(d_method => d_method.name === order.deliveryMethod)) {
+                    modalDeliverySelect.innerHTML += `<option value="${order.deliveryMethod}" selected>${order.deliveryMethod} (停用/自訂)</option>`;
+                }
+                
+                // 尚未填寫時的重置
+                if (!order.deliveryMethod) {
+                    modalDeliverySelect.value = "";
+                }
+            }
 
             const invDisplay = document.getElementById("modal-invoice-method");
             if (order.invoiceMethod) {
@@ -2708,18 +2752,6 @@
                         </div>
                     `;
                     shippingArea.classList.remove("hidden"); 
-                    
-                    const shipperDeliverySelect = document.getElementById("shipper-delivery-method-select");
-                    if (shipperDeliverySelect) {
-                        shipperDeliverySelect.innerHTML = `<option value="" disabled>請選擇出貨方式...</option>`;
-                        window.basisData.deliveryMethods.forEach(d => {
-                            const selected = (order.deliveryMethod === d.name) ? 'selected' : '';
-                            shipperDeliverySelect.innerHTML += `<option value="${d.name}" ${selected}>${d.name}</option>`;
-                        });
-                        if (order.deliveryMethod && !window.basisData.deliveryMethods.some(d => d.name === order.deliveryMethod)) {
-                            shipperDeliverySelect.innerHTML += `<option value="${order.deliveryMethod}" selected>${order.deliveryMethod} (停用/自訂)</option>`;
-                        }
-                    }
                 } else if (order.status === "Invoiced" && order.salesSlipNo) {
                     statusEl.innerHTML = `
                         <div class="space-y-2 bg-sky-50/50 p-2.5 rounded-xl border border-sky-100">
@@ -2858,13 +2890,19 @@
         
         window.confirmShipping = async function() {
             const orderId = document.getElementById("modal-hidden-order-id").value;
-            const newDeliveryMethod = document.getElementById("shipper-delivery-method-select").value;
-            await triggerDeliverySystemHook({id: orderId}, newDeliveryMethod);
+            
+            // 出貨確認階段現在直接繼承頂部即時編輯的 modal-delivery-method-select 值
+            const currentOrder = window.ordersData.find(x => x.id === orderId);
+            const deliveryMethodToShip = currentOrder ? currentOrder.deliveryMethod : "";
+            
+            await triggerDeliverySystemHook({id: orderId}, deliveryMethodToShip);
             viewOrderDetails(orderId); 
         }
         
         window.quickRegisterShipping = async function(orderId) {
-            await triggerDeliverySystemHook({id: orderId});
+            const currentOrder = window.ordersData.find(x => x.id === orderId);
+            const deliveryMethodToShip = currentOrder ? currentOrder.deliveryMethod : "";
+            await triggerDeliverySystemHook({id: orderId}, deliveryMethodToShip);
         }
 
         window.revertOrderToQuotation = function(orderId) {
@@ -2995,7 +3033,7 @@
             }
 
             let csv = "\uFEFF"; 
-            csv += "單據號碼,原報價單號,單據日期,單據類型,客戶編號,客戶名稱,業務編號,負責業務,電子信箱,發票開立方式,發票號碼,出貨方式,預定出貨日,實際出貨日,套用折數,折讓原因,大計含稅金額,銷貨單號,品項明細\n";
+            csv += "單據號碼,原報價單號,單據日期,單據類型,客戶編號,客戶名稱,業務編號,負責業務,電子信箱,發票開立方式,發票號碼,出貨方式,預定出貨日,實際出貨日,套用折數,折讓原因,瓶數,大計含稅金額,銷貨單號,品項明細\n";
 
             data.forEach(rawOrder => {
                 const order = window.resolveOrderData(rawOrder);
@@ -3016,7 +3054,9 @@
                 const cleanReason = `"${(order.discountReason || "").replace(/"/g, '""')}"`;
                 const cleanInvoiceNo = order.salesSlipNo || "";
                 
+                let totalBottles = 0;
                 let itemsStr = (order.items || []).map(i => {
+                    totalBottles += parseInt(i.qty) || 0;
                     let flags = [];
                     if (i.isRetention) flags.push('鎖貨');
                     if (i.isSample) flags.push('樣品');
@@ -3028,7 +3068,7 @@
                 const cleanItems = `"${itemsStr.replace(/"/g, '""')}"`;
                 const shippingDateStr = order.shippingDate || "未出貨";
 
-                csv += `${cleanDocNo},${cleanRefNo},${dateStr},${order.type === 'Quotation'?'報價單':'訂購單'},${cleanCusCode},${cleanCompany},${cleanSalesCode},${cleanSales},${cleanEmail},${cleanMethod},${cleanActualInvoiceNo},${cleanDelivery},${order.deliveryDate || ''},${shippingDateStr},${discountStr},${cleanReason},${order.grandTotal},${cleanInvoiceNo},${cleanItems}\n`;
+                csv += `${cleanDocNo},${cleanRefNo},${dateStr},${order.type === 'Quotation'?'報價單':'訂購單'},${cleanCusCode},${cleanCompany},${cleanSalesCode},${cleanSales},${cleanEmail},${cleanMethod},${cleanActualInvoiceNo},${cleanDelivery},${order.deliveryDate || ''},${shippingDateStr},${discountStr},${cleanReason},${totalBottles},${order.grandTotal},${cleanInvoiceNo},${cleanItems}\n`;
             });
 
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -3178,6 +3218,7 @@
             }, 4000);
         }
 
+        window.updateOrderDeliveryMethod = updateOrderDeliveryMethod;
         window.switchMode = switchMode;
         window.setFormPreviewMode = setFormPreviewMode;
         window.setSubmitTypeAndSubmit = setSubmitTypeAndSubmit;
